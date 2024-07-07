@@ -15,6 +15,11 @@ import Geography from "./scenes/geography";
 import { CssBaseline, ThemeProvider } from "@mui/material";
 import { ColorModeContext, useMode } from "./theme";
 import Calendar from "./scenes/calendar/calendar";
+import AddPricing from "./components/AddPricing";
+import ManagePricing from "./components/ManagePricing";
+import ManageSubcription from "./components/ManageSubcriptions";
+import AddSDriver from "./components/AddSDriver";
+import AddSRider from "./components/AddSRider";
 
 function App() {
   const [theme, colorMode] = useMode();
@@ -40,6 +45,16 @@ function App() {
               <Route path="/faq" element={<FAQ />} />
               <Route path="/calendar" element={<Calendar />} />
               <Route path="/geography" element={<Geography />} />
+              <Route path="/addPricing" element={<AddPricing />} />
+              <Route path="/pricing" element={<ManagePricing />} />
+              <Route path="/subcription" element={<ManageSubcription />} />
+              <Route path="/addSubcriptionDriver" element={<AddSDriver />} />
+              <Route path="/addSubcriptionDriver" element={<AddSDriver />} />
+              <Route path="/addSubcriptionRider" element={<AddSRider />} />
+
+
+
+
             </Routes>
           </main>
         </div>
