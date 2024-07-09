@@ -20,6 +20,8 @@ import ManagePricing from "./components/ManagePricing";
 import ManageSubcription from "./components/ManageSubcriptions";
 import AddSDriver from "./components/AddSDriver";
 import AddSRider from "./components/AddSRider";
+import ManageAllDriver from "./components/ManageAllDriver";
+import ManageAllRider from "./components/ManageAllRider";
 
 function App() {
   const [theme, colorMode] = useMode();
@@ -51,6 +53,8 @@ function App() {
               <Route path="/addSubcriptionDriver" element={<AddSDriver />} />
               <Route path="/addSubcriptionDriver" element={<AddSDriver />} />
               <Route path="/addSubcriptionRider" element={<AddSRider />} />
+              <Route path="/drivers" element={<ManageAllDriver />} />
+              <Route path="/riders" element={<ManageAllRider />} />
 
 
 
