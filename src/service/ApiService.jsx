@@ -31,9 +31,30 @@ export const DELETE_SUBCRIPTION = `${BASEURL}/api/web/subscription`
 
 
 
-// user
+// Driver
 
 export const GET_ALL_DRIVERS =`${BASEURL}/api/web/getAllDrivers` 
+
+// Rider
+
+
 export const GET_ALL_RIDERS = `${BASEURL}/api/web/getAllRiders`
 
+
+// cab
+
+export const CREATE_CAB = `${BASEURL}/api/web/create/cab`
+
 // http://localhost:8092/api/web/getAllDrivers?phone=9&name=&driverVehicleNumber&driverId&limit=1&page=1
+
+
+export const firebaseConfig = {
+    apiKey: "AIzaSyCcvKrETVdsLtxJQUFM35JxloBiIcMujOY",
+    authDomain: "rider-static.firebaseapp.com",
+    databaseURL: "https://rider-static-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "rider-static",
+    storageBucket: "rider-static.appspot.com",
+    messagingSenderId: "744539256538",
+    appId: "1:744539256538:web:c7e7c4c20f5b9071f517e3",
+    measurementId: "G-XJN4LS0XPL"
+  };
