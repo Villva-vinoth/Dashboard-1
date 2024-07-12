@@ -22,18 +22,9 @@ import {
   uploadBytesResumable,
   getDownloadURL,
 } from "firebase/storage";
+import { CREATE_CAB, firebaseConfig } from "../service/ApiService";
+import Header from "./Header";
 
-const firebaseConfig = {
-  apiKey: "AIzaSyCcvKrETVdsLtxJQUFM35JxloBiIcMujOY",
-  authDomain: "rider-static.firebaseapp.com",
-  databaseURL:
-    "https://rider-static-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "rider-static",
-  storageBucket: "rider-static.appspot.com",
-  messagingSenderId: "744539256538",
-  appId: "1:744539256538:web:c7e7c4c20f5b9071f517e3",
-  measurementId: "G-XJN4LS0XPL",
-};
 
 initializeApp(firebaseConfig);
 const storage = getStorage();
@@ -205,25 +196,30 @@ const AddCab = () => {
       const backImageURL = await uploadImageToFirebase(backImage, "back");
       const centerImageURL = await uploadImageToFirebase(centerImage, "center");
 
-      const formData = new FormData();
-      formData.append("user_id", cab.user_id);
-      formData.append("vehicleName", cab.vehicleName);
-      formData.append("vehicleFrontImage", frontImageURL);
-      formData.append("vehicleBackImage", backImageURL);
-      formData.append("vehicleCenterImage", centerImageURL);
-      // Add other fields to formData...
+      cab.fileUploadURL = frontImageURL;
+      cab.fileUploadURL1 = backImageURL;
+      cab.image3 = centerImageURL;
+
+      // console.log(frontImageURL, backImageURL, centerImageURL);
+      // console.log(cab);
+      setUploadProgress({
+        front: 0,
+        back: 0,
+        center: 0,
+      });
 
       const accessToken = localStorage.getItem("Token");
-      //   const response = await axios.post("/api/add-cab", formData, {
-      //     headers: {
-      //       Authorization: `Bearer ${accessToken}`,
-      //       "Content-Type": "multipart/form-data",
-      //     },
-      //   });
-
-      console.log("formData", formData);
-      toast.success("Cab added successfully!");
-      resetCab();
+      const res = await axios.post(CREATE_CAB, cab, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+      if (res.status == 200) {
+        toast.success("Cab added successfully!");
+        resetCab();
+      } else {
+        toast.error("Failed to add cab.");
+      }
     } catch (error) {
       console.error("Error adding cab:", error);
       toast.error("Failed to add cab.");
@@ -238,112 +234,137 @@ const AddCab = () => {
   return (
     <Box m="20px">
       <Box display="flex" justifyContent="space-between">
-        <Typography variant="h4" color={colors.grey[100]}>
+        {/* <Typography variant="h4" color={colors.grey[100]}>
           Add Cab
-        </Typography>
-        <Button
-          color="secondary"
-          variant="outlined"
-          onClick={() => nav("/cabs")}
-        >
-          View Cabs
-        </Button>
+        </Typography> */}
+        <Header
+          title="Add Cab"
+          subtitle="Add Cab details for different vehicle types"
+        />
+        <Box display="flex" justifyContent="center" alignItems="center">
+          <Button
+            color="secondary"
+            variant="outlined"
+            onClick={() => nav("/cabs")}
+          >
+            View Cabs
+          </Button>{" "}
+        </Box>
       </Box>
-     
+
       <Box
         mt="40px"
         p="20px"
         borderRadius="8px"
         sx={{ backgroundColor: colors.primary[400], color: colors.grey[100] }}
       >
+        <Box
+          sx={{
+            display: "grid",
+            gridTemplateColumns: "repeat(3,1fr)",
+          }}
+        >
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+            }}
+          >
+            {frontImage && (
+              <img
+                src={URL.createObjectURL(frontImage)}
+                alt="Front"
+                style={{
+                  width: "100px",
+                  height: "100px",
+                  objectFit: "contain",
+                  margin: "1%",
+                }}
+              />
+            )}
+            <input
+              type="file"
+              accept="image/*"
+              name="vehicleFrontImage"
+              ref={frontFileInput}
+              onChange={(e) => handleUploadImage(e, "front")}
+              style={{ gridColumn: "span 2" }}
+            />
 
-<Box
-        sx={{
-          display: "grid",
-          gridTemplateColumns: "repeat(3,1fr)",
-        }}
-      >
-        <Box
-          sx={{
-            display: "flex",
-            flexDirection: "column",
-          }}
-        >
-          {frontImage && (
-            <img
-              src={URL.createObjectURL(frontImage)}
-              alt="Front"
-              style={{ width: "100px", height: "100px",objectFit:"contain",margin:"1%" }}
+            {uploadProgress.front > 0 && (
+              <progress value={uploadProgress.front} max={100} />
+            )}
+          </Box>
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+            }}
+          >
+            {backImage && (
+              <img
+                src={URL.createObjectURL(backImage)}
+                alt="Back"
+                style={{
+                  width: "100px",
+                  height: "100px",
+                  objectFit: "contain",
+                  margin: "1%",
+                }}
+              />
+            )}
+            <input
+              type="file"
+              accept="image/*"
+              name="vehicleBackImage"
+              ref={backFileInput}
+              onChange={(e) => handleUploadImage(e, "back")}
+              style={{ gridColumn: "span 2" }}
             />
-          )}
-          <input
-            type="file"
-            accept="image/*"
-            name="vehicleFrontImage"
-            ref={frontFileInput}
-            onChange={(e) => handleUploadImage(e, "front")}
-            style={{ gridColumn: "span 2" }}
-          />
-
-          {uploadProgress.front > 0 && (
-            <progress value={uploadProgress.front} max={100} />
-          )}
+            {uploadProgress.back > 0 && (
+              <progress value={uploadProgress.back} max={100} />
+            )}
+          </Box>
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+            }}
+          >
+            {centerImage && (
+              <img
+                src={URL.createObjectURL(centerImage)}
+                alt="Center"
+                style={{
+                  width: "100px",
+                  height: "100px",
+                  objectFit: "contain",
+                  margin: "1%",
+                }}
+              />
+            )}
+            <input
+              type="file"
+              accept="image/*"
+              name="vehicleCenterImage"
+              ref={centerFileInput}
+              onChange={(e) => handleUploadImage(e, "center")}
+              style={{ gridColumn: "span 2" }}
+            />
+            {uploadProgress.center > 0 && (
+              <progress value={uploadProgress.center} max={100} />
+            )}
+          </Box>
         </Box>
         <Box
-          sx={{
-            display: "flex",
-            flexDirection: "column",
-          }}
+          display="grid"
+          gridTemplateColumns="repeat(2, 1fr)"
+          gap="20px"
+          margin="2% 0%"
         >
-          {backImage && (
-            <img
-              src={URL.createObjectURL(backImage)}
-              alt="Back"
-              style={{ width: "100px", height: "100px",objectFit:"contain",margin:"1%" }}
-            />
-          )}
-          <input
-            type="file"
-            accept="image/*"
-            name="vehicleBackImage"
-            ref={backFileInput}
-            onChange={(e) => handleUploadImage(e, "back")}
-            style={{ gridColumn: "span 2" }}
-          />
-          {uploadProgress.back > 0 && (
-            <progress value={uploadProgress.back} max={100} />
-          )}
-        </Box>
-        <Box
-          sx={{
-            display: "flex",
-            flexDirection: "column",
-          }}
-        >
-          {centerImage && (
-            <img
-              src={URL.createObjectURL(centerImage)}
-              alt="Center"
-              style={{ width: "100px", height: "100px",objectFit:"contain",margin:"1%" }}
-            />
-          )}
-          <input
-            type="file"
-            accept="image/*"
-            name="vehicleCenterImage"
-            ref={centerFileInput}
-            onChange={(e) => handleUploadImage(e, "center")}
-            style={{ gridColumn: "span 2" }}
-          />
-          {uploadProgress.center > 0 && (
-            <progress value={uploadProgress.center} max={100} />
-          )}
-        </Box>
-      </Box>
-        <Box display="grid" gridTemplateColumns="repeat(2, 1fr)" gap="20px" margin="2% 0%">
           <TextField
             label="Vehicle Name"
-            variant="outlined"
+            variant="filled"
             fullWidth
             name="vehicleName"
             value={cab.vehicleName}
@@ -356,15 +377,15 @@ const AddCab = () => {
               name="vehicleType"
               value={cab.vehicleType}
               onChange={handleInputChange}
+              variant="filled"
             >
-              <MenuItem value="SUV">SUV</MenuItem>
-              <MenuItem value="Sedan">Sedan</MenuItem>
-              <MenuItem value="Hatchback">Hatchback</MenuItem>
+              <MenuItem value="CAR">car</MenuItem>
+              <MenuItem value="BIKE">bike</MenuItem>
             </Select>
           </FormControl>
           <TextField
             label="Vehicle Model"
-            variant="outlined"
+            variant="filled"
             fullWidth
             name="vehicleModel"
             value={cab.vehicleModel}
@@ -372,7 +393,7 @@ const AddCab = () => {
           />
           <TextField
             label="Vehicle Model Year"
-            variant="outlined"
+            variant="filled"
             fullWidth
             name="vehicleModelYear"
             value={cab.vehicleModelYear}
@@ -380,7 +401,7 @@ const AddCab = () => {
           />
           <TextField
             label="Vehicle Model Sub Name"
-            variant="outlined"
+            variant="filled"
             fullWidth
             name="vehicleModelSubName"
             value={cab.vehicleModelSubName}
@@ -388,7 +409,7 @@ const AddCab = () => {
           />
           <TextField
             label="Transmission Type"
-            variant="outlined"
+            variant="filled"
             fullWidth
             name="transmissionType"
             value={cab.transmissionType}
@@ -396,7 +417,7 @@ const AddCab = () => {
           />
           <TextField
             label="Vehicle Capacity"
-            variant="outlined"
+            variant="filled"
             fullWidth
             name="vehicleCapacity"
             value={cab.vehicleCapacity}
@@ -404,31 +425,60 @@ const AddCab = () => {
           />
           <TextField
             label="Manufacturer"
-            variant="outlined"
+            variant="filled"
             fullWidth
             name="manufacturer"
             value={cab.manufacturer}
             onChange={handleInputChange}
           />
-          <TextField
-            label="Fuel Type"
-            variant="outlined"
-            fullWidth
-            name="fueltype"
-            value={cab.fueltype}
-            onChange={handleInputChange}
-          />
+          <FormControl fullWidth>
+            <InputLabel>Fuel Type</InputLabel>
+            <Select
+              name="fueltype"
+              value={cab.fueltype}
+              onChange={handleInputChange}
+              variant="filled"
+            >
+              <MenuItem value="PETROL">petrol</MenuItem>
+              <MenuItem value="DISEL">disel</MenuItem>
+              <MenuItem value="CNG">cng</MenuItem>
+            </Select>
+          </FormControl>
           <TextField
             label="Operating Mode"
-            variant="outlined"
+            variant="filled"
             fullWidth
             name="operating_mode"
             value={cab.operating_mode}
             onChange={handleInputChange}
           />
           <TextField
+            label="Comfort Level"
+            variant="filled"
+            fullWidth
+            name="comfortLevel"
+            value={cab.comfortLevel}
+            onChange={handleInputChange}
+          />
+          <TextField
+            label="Error Rate"
+            variant="filled"
+            fullWidth
+            name="errorRate"
+            value={cab.errorRate}
+            onChange={handleInputChange}
+          />
+          <TextField
+            label="Safety Rate"
+            variant="filled"
+            fullWidth
+            name="safetyRate"
+            value={cab.safetyRate}
+            onChange={handleInputChange}
+          />
+          <TextField
             label="KMPL"
-            variant="outlined"
+            variant="filled"
             fullWidth
             name="kmpl"
             value={cab.kmpl}
@@ -436,7 +486,7 @@ const AddCab = () => {
           />
           <TextField
             label="Vehicle Number"
-            variant="outlined"
+            variant="filled"
             fullWidth
             name="vehicleNumber"
             value={cab.vehicleNumber}
@@ -444,21 +494,44 @@ const AddCab = () => {
           />
           <TextField
             label="Peak Current"
-            variant="outlined"
+            variant="filled"
             fullWidth
             name="peak_current"
             value={cab.peak_current}
             onChange={handleInputChange}
           />
         </Box>
-        <Button
-          variant="contained"
-          color="secondary"
-          onClick={handleAddCab}
-          style={{ marginTop: "20px" }}
-        >
-          Add Cab
-        </Button>
+        <Box sx={{
+          display:"flex" ,
+        justifyContent:"end",
+         gap:"10px",
+          mt:"20px"
+        }}>
+          <Button
+            variant="outlined"
+            color="secondary"
+            onClick={handleAddCab}
+            style={{ marginTop: "20px" }}
+          >
+            Add Cab
+          </Button>
+          <Button
+            variant="outlined"
+            color="secondary"
+            onClick={resetCab}
+            style={{ marginTop: "20px" }}
+          >
+            Reset
+          </Button>
+          <Button
+            variant="outlined"
+            color="secondary"
+            onClick={()=>nav('/cabs')}
+            style={{ marginTop: "20px" }}
+          >
+            cancel
+          </Button>
+        </Box>
       </Box>
       <ToastContainer />
     </Box>

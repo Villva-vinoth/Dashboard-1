@@ -45,8 +45,7 @@ export const GET_ALL_RIDERS = `${BASEURL}/api/web/getAllRiders`
 
 export const CREATE_CAB = `${BASEURL}/api/web/create/cab`
 
-// http://localhost:8092/api/web/getAllDrivers?phone=9&name=&driverVehicleNumber&driverId&limit=1&page=1
-
+// curl --location 'localhost:8092/api/web/get/all/cabs?vehicleType=CAR&page=1&limit=1'
 
 export const firebaseConfig = {
     apiKey: "AIzaSyCcvKrETVdsLtxJQUFM35JxloBiIcMujOY",
