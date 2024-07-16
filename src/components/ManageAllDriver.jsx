@@ -289,38 +289,38 @@ const ManageAllDriver = () => {
             placeholder="Phone Number"
             name="phoneNumber"
             value={searchData.phoneNumber}
-            onChange={handleChange}
+            onChange={(e)=>{handleChange(e);handleSearch()}}
             variant="filled"
           />
           <TextField
             placeholder="Name"
             name="name"
             value={searchData.name}
-            onChange={handleChange}
+            onChange={(e)=>{handleChange(e);handleSearch()}}
             variant="filled"
           />
           <TextField
             placeholder="Vehicle Number"
             name="vehicleNumber"
             value={searchData.vehicleNumber}
-            onChange={handleChange}
+            onChange={(e)=>{handleChange(e);handleSearch()}}
             variant="filled"
           />
           <TextField
             placeholder="Driver Id"
             name="driverId"
             value={searchData.driverId}
-            onChange={handleChange}
+            onChange={(e)=>{handleChange(e);handleSearch()}}
             variant="filled"
           />
-          <Button
+          {/* <Button
             variant="contained"
             color="primary"
             startIcon={<FaSearch />}
             onClick={handleSearch}
           >
             Search
-          </Button>
+          </Button> */}
         </Box>
       </Box>
 

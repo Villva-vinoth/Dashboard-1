@@ -256,7 +256,7 @@ const AddCab = () => {
         mt="40px"
         p="20px"
         borderRadius="8px"
-        sx={{ backgroundColor: colors.primary[400], color: colors.grey[100] }}
+        // sx={{ backgroundColor: colors.primary[400], color: colors.grey[100] }}
       >
         <Box
           sx={{

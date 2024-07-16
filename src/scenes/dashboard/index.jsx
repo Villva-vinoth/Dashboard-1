@@ -12,10 +12,40 @@ import GeographyChart from "../../components/GeographyChart";
 import BarChart from "../../components/BarChart";
 import StatBox from "../../components/StatBox";
 import ProgressCircle from "../../components/ProgressCircle";
-
+import { useEffect, useState } from "react";
+import axios from "axios";
+import { DASHBOARD } from "../../service/ApiService";
+import {FaCarAlt ,FaCarSide} from 'react-icons/fa'
+import {IoCarSportOutline} from 'react-icons/io5'
+import {BiTrip} from 'react-icons/bi'
 const Dashboard = () => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
+
+  const [totalRecords,setTotalRecords]= useState([])
+  const [tripRecords,setTripRecords]= useState([])
+  const [tripReports,setTripReports]= useState([])
+
+
+
+  useEffect(()=>{
+    const data = async ()=>{
+      const Token = localStorage.getItem('token')
+      const get_data = await axios.get(DASHBOARD,{
+        headers:{
+          Authorization:`Bearer ${Token}`
+        }
+      } )
+      if(get_data.data){
+        setTotalRecords(get_data.data.data.totalRecord)
+        setTripRecords(get_data.data.data.tripEarning)
+        setTripReports(get_data.data.data.tripReport)
+      }
+    
+      console.log("data",get_data.data.data.tripEarning)
+    }
+    data()
+  },[])
 
   return (
     <Box m="20px">
@@ -55,13 +85,32 @@ const Dashboard = () => {
           justifyContent="center"
         >
           <StatBox
-            title="12,361"
-            subtitle="Emails Sent"
-            progress="0.75"
-            increase="+14%"
+            title={totalRecords.driver || 0}
+            subtitle="Drivers"
+            progress={(totalRecords.driver/100) || 0}
+            increase={`+${(totalRecords.driver/100) || 0}%`}
             icon={
-              <EmailIcon
-                sx={{ color: colors.greenAccent[600], fontSize: "26px" }}
+              <FaCarAlt color={colors.greenAccent[600]} size={20}/>
+            }
+          />
+        </Box>
+        
+        <Box
+          gridColumn="span 3"
+          backgroundColor={colors.primary[400]}
+          display="flex"
+          alignItems="center"
+          justifyContent="center"
+        >
+          <StatBox
+            title={totalRecords.rider || 0 }
+            subtitle="Riders"
+            progress={(totalRecords.rider/100) || 0}
+            increase={`+${(totalRecords.rider/100) || 0}%`}
+            icon={
+              
+              <FaCarSide color={colors.greenAccent[600]} size={20}
+                // sx={{ color: colors.greenAccent[600], fontSize: "26px" }}
               />
             }
           />
@@ -74,13 +123,13 @@ const Dashboard = () => {
           justifyContent="center"
         >
           <StatBox
-            title="431,225"
-            subtitle="Sales Obtained"
-            progress="0.50"
-            increase="+21%"
+            title={totalRecords.cab || 0}
+            subtitle="Cabs"
+            progress={(totalRecords.cab)/100 || 0}
+            increase={`+${(totalRecords.cab)/100 ||0}%`}
             icon={
-              <PointOfSaleIcon
-                sx={{ color: colors.greenAccent[600], fontSize: "26px" }}
+              <IoCarSportOutline color={colors.greenAccent[600]} size={20}
+                // sx={{ color: colors.greenAccent[600], fontSize: "26px" }}
               />
             }
           />
@@ -93,32 +142,13 @@ const Dashboard = () => {
           justifyContent="center"
         >
           <StatBox
-            title="32,441"
-            subtitle="New Clients"
-            progress="0.30"
-            increase="+5%"
+            title={totalRecords.trip ||0}
+            subtitle="Trip"
+            progress={(totalRecords.trip/100) ||0}
+            increase={`+${(totalRecords.trip/100)||0}%`}
             icon={
-              <PersonAddIcon
-                sx={{ color: colors.greenAccent[600], fontSize: "26px" }}
-              />
-            }
-          />
-        </Box>
-        <Box
-          gridColumn="span 3"
-          backgroundColor={colors.primary[400]}
-          display="flex"
-          alignItems="center"
-          justifyContent="center"
-        >
-          <StatBox
-            title="1,325,134"
-            subtitle="Traffic Received"
-            progress="0.80"
-            increase="+43%"
-            icon={
-              <TrafficIcon
-                sx={{ color: colors.greenAccent[600], fontSize: "26px" }}
+              <BiTrip color={colors.greenAccent[600]} size={20}
+                // sx={{ color: colors.greenAccent[600], fontSize: "26px" }}
               />
             }
           />

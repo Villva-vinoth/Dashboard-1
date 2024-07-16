@@ -5,8 +5,6 @@ export const LOGIN = `${BASEURL}/api/web/login/user/admin`
 
 const REGISTER =`${BASEURL}/api/web/create/user/admin`
 
-// /api/web/login/user/admin
-
 // pricing
 
 export const GET_ALL_PRICING =`${BASEURL}/api/web/pricing`
@@ -21,7 +19,6 @@ export const DELETE_PRICING =`${BASEURL}/api/web/pricing`
 export const CHANGE_PASSWORD = `${BASEURL}/api/web/changePassword`
 
 export const GET_ADMIN  = `${BASEURL}/api/web/get/user/admin`
-// localhost:8092/api/web/get/user/admin
 
 // subcription
 export const CREATE_SUBCRIPTION = `${BASEURL}/api/web/subscription`
@@ -44,8 +41,8 @@ export const GET_ALL_RIDERS = `${BASEURL}/api/web/getAllRiders`
 // cab
 
 export const CREATE_CAB = `${BASEURL}/api/web/create/cab`
-
-// curl --location 'localhost:8092/api/web/get/all/cabs?vehicleType=CAR&page=1&limit=1'
+export const GET_ALL_CAB = `${BASEURL}/api/web/get/all/cabs`
+export const DELETE_CAB = `${BASEURL}/api/web/delete/a/cab`
 
 export const firebaseConfig = {
     apiKey: "AIzaSyCcvKrETVdsLtxJQUFM35JxloBiIcMujOY",
@@ -57,3 +54,8 @@ export const firebaseConfig = {
     appId: "1:744539256538:web:c7e7c4c20f5b9071f517e3",
     measurementId: "G-XJN4LS0XPL"
   };
+
+
+  export const DASHBOARD = `${BASEURL}/api/web/dashboard`
+
+  // curl --location 'http://localhost:8092/api/web/dashboard'
