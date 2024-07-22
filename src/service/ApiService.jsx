@@ -5,6 +5,10 @@ export const LOGIN = `${BASEURL}/api/web/login/user/admin`
 
 const REGISTER =`${BASEURL}/api/web/create/user/admin`
 
+// localhost:8092/api/web/get/user/admin
+
+export const GET_USER = `${BASEURL}/api/web/get/user/admin`
+
 // pricing
 
 export const GET_ALL_PRICING =`${BASEURL}/api/web/pricing`

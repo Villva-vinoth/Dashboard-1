@@ -18,6 +18,10 @@ import { DASHBOARD } from "../../service/ApiService";
 import {FaCarAlt ,FaCarSide} from 'react-icons/fa'
 import {IoCarSportOutline} from 'react-icons/io5'
 import {BiTrip} from 'react-icons/bi'
+import {RiMoneyRupeeCircleFill} from 'react-icons/ri'
+import {MdGroups} from 'react-icons/md'
+
+
 const Dashboard = () => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
@@ -42,7 +46,7 @@ const Dashboard = () => {
         setTripReports(get_data.data.data.tripReport)
       }
     
-      console.log("data",get_data.data.data.tripEarning)
+      console.log("data",get_data.data.data.tripReport)
     }
     data()
   },[])
@@ -153,6 +157,87 @@ const Dashboard = () => {
             }
           />
         </Box>
+
+        <Box
+          gridColumn="span 3"
+          backgroundColor={colors.primary[400]}
+          display="flex"
+          alignItems="center"
+          justifyContent="center"
+        >
+          <StatBox
+            title={tripRecords.count ||0}
+            subtitle="Trip Earning"
+            progress={(tripRecords.count/100) ||0}
+            increase={`+${(tripRecords.count/100)||0}%`}
+            icon={
+              <MdGroups color={colors.greenAccent[600]} size={20}
+                // sx={{ color: colors.greenAccent[600], fontSize: "26px" }}
+              />
+            }
+          />
+        </Box>
+
+        <Box
+          gridColumn="span 3"
+          backgroundColor={colors.primary[400]}
+          display="flex"
+          alignItems="center"
+          justifyContent="center"
+        >
+          <StatBox
+            title={tripRecords.admin ||0}
+            subtitle="Admin Earning"
+            progress={(tripRecords.admin/100) ||0}
+            increase={`+${(tripRecords.admin/100)||0}%`}
+            icon={
+              <RiMoneyRupeeCircleFill color={colors.greenAccent[600]} size={20}
+                // sx={{ color: colors.greenAccent[600], fontSize: "26px" }}
+              />
+            }
+          />
+        </Box>
+
+        <Box
+          gridColumn="span 3"
+          backgroundColor={colors.primary[400]}
+          display="flex"
+          alignItems="center"
+          justifyContent="center"
+        >
+          <StatBox
+            title={tripRecords.driver ||0}
+            subtitle="Driver Earning"
+            // progress={(tripRecords.driver/100) ||0}
+            // increase={`+${(tripRecords.dr/100)||0}%`}
+            icon={
+              <RiMoneyRupeeCircleFill color={colors.greenAccent[600]} size={20}
+                // sx={{ color: colors.greenAccent[600], fontSize: "26px" }}
+              />
+            }
+          />
+        </Box>
+
+         <Box
+          gridColumn="span 3"
+          backgroundColor={colors.primary[400]}
+          display="flex"
+          alignItems="center"
+          justifyContent="center"
+        >
+          <StatBox
+            title={tripRecords.trip ||0}
+            subtitle="Trips Earning"
+            // progress={(tripRecords.trip/100) ||0}
+            // increase={`+${(tripRecords.trip/100)||0}%`}
+            icon={
+              <RiMoneyRupeeCircleFill color={colors.greenAccent[600]} size={20}
+                // sx={{ color: colors.greenAccent[600], fontSize: "26px" }}
+              />
+            }
+          />
+        </Box>
+
 
         {/* ROW 2 */}
         <Box

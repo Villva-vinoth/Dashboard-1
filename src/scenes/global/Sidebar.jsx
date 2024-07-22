@@ -18,7 +18,8 @@ import MenuOutlinedIcon from "@mui/icons-material/MenuOutlined";
 import MapOutlinedIcon from "@mui/icons-material/MapOutlined";
 import { IoIosPricetags } from "react-icons/io";
 import { FaCircleDollarToSlot } from "react-icons/fa6";
-
+import axios from "axios";
+import {GET_USER } from '../../service/ApiService'
 
 const Item = ({ title, to, icon, selected, setSelected }) => {
   const theme = useTheme();
@@ -48,6 +49,28 @@ const Sidebar = () => {
   const colors = tokens(theme.palette.mode);
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [selected, setSelected] = useState("Dashboard");
+
+
+  const [userData,setUserData]= useState([])
+
+  useEffect(()=>{
+    const getData = async ()=>{
+      try{
+        const token = localStorage.getItem('Token')
+        const res = await axios.get(GET_USER,{
+          headers:{
+            Authorization:`Bearer ${token}`
+          }
+        })
+        console.log(res.data.data)
+        setUserData(res.data.data)
+      }
+      catch(error){
+        console.log(error)
+      }
+    }
+    getData()
+  },[])
 
   return (
     <Box
@@ -115,7 +138,7 @@ const Sidebar = () => {
                   fontWeight="bold"
                   sx={{ m: "10px 0 0 0" }}
                 >
-                  Ed Roh
+                  {userData && userData?.name}
                 </Typography>
                 <Typography variant="h5" color={colors.greenAccent[500]}>
                   VP Fancy Admin
@@ -127,7 +150,7 @@ const Sidebar = () => {
           <Box paddingLeft={isCollapsed ? undefined : "10%"}>
             <Item
               title="Dashboard"
-              to="/"
+              to="/admin"
               icon={<HomeOutlinedIcon />}
               selected={selected}
               setSelected={setSelected}
@@ -142,21 +165,21 @@ const Sidebar = () => {
             </Typography>
             <Item
               title="Drivers"
-              to="/drivers"
+              to="/admin/drivers"
               icon={<PeopleOutlinedIcon />}
               selected={selected}
               setSelected={setSelected}
             />
             <Item
               title="Riders"
-              to="/riders"
+              to="/admin/riders"
               icon={<ContactsOutlinedIcon />}
               selected={selected}
               setSelected={setSelected}
             />
             <Item
               title="Cab"
-              to="/cabs"
+              to="/admin/cabs"
               icon={<ContactsOutlinedIcon />}
               selected={selected}
               setSelected={setSelected}
@@ -170,14 +193,14 @@ const Sidebar = () => {
             /> */}
              <Item
               title="Pricing"
-              to="/pricing"
+              to="/admin/pricing"
               icon={<IoIosPricetags />}
               selected={selected}
               setSelected={setSelected}
             />
             <Item
               title="Subcription"
-              to="/subcription"
+              to="/admin/subcription"
               icon={<FaCircleDollarToSlot />}
               selected={selected}
               setSelected={setSelected}
@@ -221,28 +244,28 @@ const Sidebar = () => {
             </Typography>
             <Item
               title="Bar Chart"
-              to="/bar"
+              to="/admin/bar"
               icon={<BarChartOutlinedIcon />}
               selected={selected}
               setSelected={setSelected}
             />
             <Item
               title="Pie Chart"
-              to="/pie"
+              to="/admin/pie"
               icon={<PieChartOutlineOutlinedIcon />}
               selected={selected}
               setSelected={setSelected}
             />
             <Item
               title="Line Chart"
-              to="/line"
+              to="/admin/line"
               icon={<TimelineOutlinedIcon />}
               selected={selected}
               setSelected={setSelected}
             />
             <Item
               title="Geography Chart"
-              to="/geography"
+              to="/admin/geography"
               icon={<MapOutlinedIcon />}
               selected={selected}
               setSelected={setSelected}
