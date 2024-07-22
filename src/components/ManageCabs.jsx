@@ -261,7 +261,7 @@ const ManageCabs = () => {
               <Button
                 color="secondary"
                 variant="outlined"
-                onClick={() => nav("/add-cabs")}
+                onClick={() => nav("/admin/add-cabs")}
               >
                 Add Cabs
               </Button>{" "}

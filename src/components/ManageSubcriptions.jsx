@@ -186,8 +186,8 @@ const ManageSubcription = () => {
         <Box display="flex" justifyContent="space-between">
         <Header title="Subcription" subtitle="Managing the Subcription Details" />
             <Box display="flex" justifyContent="center" alignItems="center" gap={2}>
-                <Button color="secondary" variant="outlined" onClick={()=>nav('/addSubcriptionRider')}> Add Rider</Button>
-                <Button color="secondary" variant="outlined" onClick={()=>nav('/addSubcriptionDriver')}> Add Driver</Button>
+                <Button color="secondary" variant="outlined" onClick={()=>nav('/admin/addSubcriptionRider')}> Add Rider</Button>
+                <Button color="secondary" variant="outlined" onClick={()=>nav('/admin/addSubcriptionDriver')}> Add Driver</Button>
                 </Box>
         </Box>
       {refresh ? (

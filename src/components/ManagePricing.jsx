@@ -219,7 +219,7 @@ const ManagePricing = () => {
     <Container maxWidth="xl">
         <Box display="flex" justifyContent="space-between">
         <Header title="Pricing" subtitle="Managing the Pricing Details" />
-            <Box display="flex" justifyContent="center" alignItems="center"><Button color="secondary" variant="outlined" onClick={()=>nav('/addPricing')}> Add Pricing</Button></Box>
+            <Box display="flex" justifyContent="center" alignItems="center"><Button color="secondary" variant="outlined" onClick={()=>nav('/admin/addPricing')}> Add Pricing</Button></Box>
         </Box>
       {refresh ? (
         <Box mt={4}>

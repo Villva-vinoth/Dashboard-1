@@ -163,7 +163,7 @@ const AddSDriver = () => {
           <Button
             variant="outlined"
             color="secondary"
-            onClick={() => nav("/subcription")}
+            onClick={() => nav("/admin/subcription")}
           >
             Cancel
           </Button>

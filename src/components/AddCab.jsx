@@ -526,7 +526,7 @@ const AddCab = () => {
           <Button
             variant="outlined"
             color="secondary"
-            onClick={()=>nav('/cabs')}
+            onClick={()=>nav('/admin/cabs')}
             style={{ marginTop: "20px" }}
           >
             cancel
