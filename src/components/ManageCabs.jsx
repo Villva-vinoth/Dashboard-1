@@ -25,18 +25,27 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import axios from "axios";
 import { tokens } from "../theme";
-import { GET_ALL_CAB, DELETE_CAB } from "../service/ApiService";
+import { GET_ALL_CAB, DELETE_CAB, firebaseConfig } from "../service/ApiService";
 import { MdEditSquare, MdDelete, MdGridView } from "react-icons/md";
 import { useNavigate } from "react-router-dom";
 import { FaEdit } from "react-icons/fa";
+import {
+  getStorage,
+  ref,
+  uploadBytesResumable,
+  getDownloadURL,
+} from "firebase/storage";
+import { initializeApp } from "firebase/app";
 
+
+initializeApp(firebaseConfig);
+const storage = getStorage();
 const ManageCabs = () => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
   const nav = useNavigate();
   const [cabs, setCabs] = useState([]);
   const [refresh, setRefresh] = useState(true);
-
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [currentId, setCurrentId] = useState("");
@@ -86,7 +95,11 @@ const ManageCabs = () => {
       flex: 1,
       renderCell: (params) => (
         <Box display="flex">
-          <Button onClick={() => openEditModal(params.row)} startIcon={<FaEdit />} color="secondary" />
+          <Button
+            onClick={() => openEditModal(params.row)}
+            startIcon={<FaEdit />}
+            color="secondary"
+          />
           <Button
             onClick={() => openDeleteModal()}
             startIcon={<MdDelete />}
@@ -108,7 +121,6 @@ const ManageCabs = () => {
     vehicleName: "",
     vehicleFrontImage: "",
     vehicleBackImage: "",
-    vehicleCenterImage: "",
     vehicleType: "",
     vehicleModel: "",
     vehicleModelYear: "",
@@ -143,11 +155,13 @@ const ManageCabs = () => {
     const file = e.target.files[0];
     if (file) {
       if (type === "front") {
+        const imageUrl = URL.createObjectURL(file);
         setFrontImage(file);
-        setEditCab({ ...editCab, vehicleFrontImage: file });
+        setEditCab({ ...editCab, vehicleFrontImage: imageUrl });
       } else if (type === "back") {
+        const imageUrl = URL.createObjectURL(file);
         setBackImage(file);
-        setEditCab({ ...editCab, vehicleBackImage: file });
+        setEditCab({ ...editCab, vehicleBackImage: imageUrl });
       } else if (type === "center") {
         setCenterImage(file);
         setEditCab({ ...editCab, vehicleCenterImage: file });
@@ -160,14 +174,76 @@ const ManageCabs = () => {
     setEditCab({ ...editCab, [name]: value });
   };
 
+  const handleValidation = () => {
+    const {
+      vehicleName,
+      vehicleFrontImage,
+      vehicleBackImage,
+    } = editCab;
+
+    if (vehicleName === "") {
+      toast.error("Vehicle Name should not be empty!", {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "dark",
+      });
+      return false;
+    }
+
+    if (!vehicleFrontImage || !vehicleBackImage) {
+      toast.error("Please upload all vehicle images!", {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "dark",
+      });
+      return false;
+    }
+
+    return true;
+  };
+
+  const uploadImageToFirebase = (file, type) => {
+    return new Promise((resolve, reject) => {
+      const storageRef = ref(storage, `images/${file.name}`);
+      const uploadTask = uploadBytesResumable(storageRef, file);
+
+      uploadTask.on(
+        "state_changed",
+        (snapshot) => {
+          const progress = Math.round(
+            (snapshot.bytesTransferred / snapshot.totalBytes) * 100
+          );
+          setUploadProgress((prev) => ({ ...prev, [type]: progress }));
+        },
+        (error) => {
+          console.error("Image upload error:", error);
+          reject(error);
+        },
+        async () => {
+          const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+          resolve(downloadURL);
+        }
+      );
+    });
+  };
+
   const openEditModal = (row) => {
     setEditModalOpen(true);
-    console.log(row)
+    console.log(row);
     setEditCab({
       vehicleName: row.vehicleName,
-      vehicleFrontImage: row.vehicleFrontImage,
-      vehicleBackImage: row.vehicleBackImage,
-      vehicleCenterImage: row.vehicleCenterImage,
+      vehicleFrontImage: row.image1,
+      vehicleBackImage: row.image2,
       vehicleType: row.vehicleType,
       vehicleModel: row.vehicleModel,
       vehicleModelYear: row.vehicleModelYear,
@@ -199,8 +275,13 @@ const ManageCabs = () => {
   };
 
   const handleEdit = () => {
-    console.log("edit");
-    setEditModalOpen(false)
+    console.log("edit",editCab);
+
+    if(!handleValidation()){
+      return;
+    }
+
+    setEditModalOpen(false);
   };
 
   const handleDelete = async () => {
@@ -341,102 +422,71 @@ const ManageCabs = () => {
               Please fill in the form to edit the pricing details.
             </DialogContentText>
             <Box
-              mt="40px"
-              p="20px"
+              mt="20px"
+              p="10px"
               borderRadius="8px"
-              // sx={{ backgroundColor: colors.primary[400], color: colors.grey[100] }}
+              sx={{}}
             >
-              {/* <Box
-                sx={{
-                  display: "flex",
-                  flexDirection: "column",
-                }}
-              >
-                {frontImage && (
-                  <img
-                    src={URL.createObjectURL(frontImage)}
-                    alt="Front"
-                    style={{
-                      width: "100px",
-                      height: "100px",
-                      objectFit: "contain",
-                      margin: "1%",
-                    }}
-                  />
-                )}
+              <Box>
                 <input
-                  type="file"
-                  accept="image/*"
-                  name="vehicleFrontImage"
                   ref={frontFileInput}
+                  accept="image/*"
+                  type="file"
+                  style={{ display: "none" }}
                   onChange={(e) => handleUploadImage(e, "front")}
-                  style={{ gridColumn: "span 2" }}
                 />
-
-                {uploadProgress.front > 0 && (
-                  <progress value={uploadProgress.front} max={100} />
+                <Button
+                  color="secondary"
+                  variant="outlined"
+                  onClick={() => frontFileInput.current.click()}
+                >
+                  Upload Front Image
+                </Button>
+                {editCab.vehicleFrontImage && (
+                  <Box mt={2}>
+                    <img
+                      src={editCab.vehicleFrontImage}
+                      alt="Front"
+                      style={{
+                        width: "100px",
+                        height: "100px",
+                        objectFit: "contain",
+                        // margin: "1%",
+                      }}
+                    />
+                  </Box>
                 )}
               </Box>
-              <Box
-                sx={{
-                  display: "flex",
-                  flexDirection: "column",
-                }}
-              >
-                {backImage && (
-                  <img
-                    src={URL.createObjectURL(backImage) || editCab.vehicleBackImage}
-                    alt="Back"
-                    style={{
-                      width: "100px",
-                      height: "100px",
-                      objectFit: "contain",
-                      margin: "1%",
-                    }}
-                  />
-                )}
+              <Box>
                 <input
-                  type="file"
-                  accept="image/*"
-                  name="vehicleBackImage"
                   ref={backFileInput}
+                  accept="image/*"
+                  type="file"
+                  style={{ display: "none" }}
                   onChange={(e) => handleUploadImage(e, "back")}
-                  style={{ gridColumn: "span 2" }}
                 />
-                {uploadProgress.back > 0 && (
-                  <progress value={uploadProgress.back} max={100} />
+                <Button
+                  color="secondary"
+                  variant="outlined"
+                  onClick={() => backFileInput.current.click()}
+                >
+                  Upload Back Image
+                </Button>
+                {editCab.vehicleBackImage && (
+                  <Box mt={2}>
+                    <img
+                      src={editCab.vehicleBackImage}
+                      alt="Back"
+                      style={{
+                        width: "100px",
+                        height: "100px",
+                        objectFit: "contain",
+                        // margin: "1%",
+                      }}
+                    />
+                  </Box>
                 )}
               </Box>
-              <Box
-                sx={{
-                  display: "flex",
-                  flexDirection: "column",
-                }}
-              >
-                {centerImage && (
-                  <img
-                    src={URL.createObjectURL(centerImage)}
-                    alt="Center"
-                    style={{
-                      width: "100px",
-                      height: "100px",
-                      objectFit: "contain",
-                      margin: "1%",
-                    }}
-                  />
-                )}
-                <input
-                  type="file"
-                  accept="image/*"
-                  name="vehicleCenterImage"
-                  ref={centerFileInput}
-                  onChange={(e) => handleUploadImage(e, "center")}
-                  style={{ gridColumn: "span 2" }}
-                />
-                {uploadProgress.center > 0 && (
-                  <progress value={uploadProgress.center} max={100} />
-                )}
-              </Box> */}
               <Box
                 display="grid"
                 gridTemplateColumns="repeat(2, 1fr)"
@@ -525,7 +575,7 @@ const ManageCabs = () => {
                     <MenuItem value="CNG">cng</MenuItem>
                   </Select>
                 </FormControl>
-               
+
                 <TextField
                   label="Comfort Level"
                   variant="filled"
@@ -566,12 +616,15 @@ const ManageCabs = () => {
                   value={editCab.vehicleNumber}
                   onChange={handleInputChange}
                 />
-               
               </Box>
             </Box>
           </DialogContent>
           <DialogActions>
-            <Button onClick={()=>closeEditModal()} color="error" variant="outlined">
+            <Button
+              onClick={() => closeEditModal()}
+              color="error"
+              variant="outlined"
+            >
               Cancel
             </Button>
             <Button onClick={handleEdit} color="secondary" variant="outlined">

@@ -187,6 +187,7 @@ const AddCab = () => {
       );
     });
   };
+  
 
   const handleAddCab = async () => {
     if (!handleValidation()) return;
