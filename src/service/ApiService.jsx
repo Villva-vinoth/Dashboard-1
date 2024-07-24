@@ -34,7 +34,8 @@ export const DELETE_SUBCRIPTION = `${BASEURL}/api/web/subscription`
 
 // Driver
 
-export const GET_ALL_DRIVERS =`${BASEURL}/api/web/getAllDrivers` 
+export const GET_ALL_DRIVERS =`${BASEURL}/api/web/getAllDrivers`
+export const CREATE_DRIVER = `${BASEURL}/api/web/create/new` 
 
 // Rider
 
@@ -47,6 +48,7 @@ export const GET_ALL_RIDERS = `${BASEURL}/api/web/getAllRiders`
 export const CREATE_CAB = `${BASEURL}/api/web/create/cab`
 export const GET_ALL_CAB = `${BASEURL}/api/web/get/all/cabs`
 export const DELETE_CAB = `${BASEURL}/api/web/delete/a/cab`
+export const UPDATE_CAB = `${BASEURL}/api/web/edit/cab`
 
 export const firebaseConfig = {
     apiKey: "AIzaSyCcvKrETVdsLtxJQUFM35JxloBiIcMujOY",

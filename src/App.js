@@ -24,6 +24,7 @@ import ManageAllDriver from "./components/ManageAllDriver";
 import ManageAllRider from "./components/ManageAllRider";
 import AddCab from "./components/AddCab";
 import ManageCabs from "./components/ManageCabs";
+import AddDriver from "./components/AddDriver";
 
 function App() {
   const [theme, colorMode] = useMode();
@@ -55,6 +56,7 @@ function App() {
               <Route path="/addSubcriptionDriver" element={<AddSDriver />} />
               <Route path="/addSubcriptionDriver" element={<AddSDriver />} />
               <Route path="/addSubcriptionRider" element={<AddSRider />} />
+              <Route path="/add-drivers" element={<AddDriver />} />
               <Route path="/drivers" element={<ManageAllDriver />} />
               <Route path="/riders" element={<ManageAllRider />} />
               <Route path="/add-cabs" element={<AddCab />} />

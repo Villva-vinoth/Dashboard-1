@@ -25,7 +25,7 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import axios from "axios";
 import { tokens } from "../theme";
-import { GET_ALL_CAB, DELETE_CAB, firebaseConfig } from "../service/ApiService";
+import { GET_ALL_CAB, DELETE_CAB, firebaseConfig, UPDATE_CAB } from "../service/ApiService";
 import { MdEditSquare, MdDelete, MdGridView } from "react-icons/md";
 import { useNavigate } from "react-router-dom";
 import { FaEdit } from "react-icons/fa";
@@ -50,6 +50,7 @@ const ManageCabs = () => {
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [currentId, setCurrentId] = useState("");
   const [isRefresh, setIsRefresh] = useState(true);
+  const [isdisabled,setIsDisabled] = useState(false)
 
   const columns = [
     {
@@ -134,9 +135,8 @@ const ManageCabs = () => {
     safetyRate: "",
     errorRate: "",
     vehicleNumber: "",
-    peak_current: "",
     status: "",
-    operating_mode: "",
+    cab_id:""
   });
 
   const frontFileInput = useRef(null);
@@ -237,6 +237,43 @@ const ManageCabs = () => {
     });
   };
 
+  const resetCab = () => {
+    setEditCab({
+      user_id: localStorage.getItem("Id"),
+      vehicleName: "",
+      vehicleFrontImage: "",
+      vehicleBackImage: "",
+      vehicleCenterImage: "",
+      vehicleType: "",
+      vehicleModel: "",
+      vehicleModelYear: "",
+      vehicleModelSubName: "",
+      manufacturer: "",
+      vehicleCapacity: "",
+      transmissionType: "",
+      kmpl: "",
+      fueltype: "",
+      comfortLevel: "",
+      safetyRate: "",
+      errorRate: "",
+      vehicleNumber: "",
+      peak_current: "",
+      status: "",
+      operating_mode: "",
+      cab_id:""
+    });
+    setFrontImage(null);
+    setBackImage(null);
+    setCenterImage(null);
+    if (frontFileInput.current) {
+      frontFileInput.current.value = null;
+    }
+    if (backFileInput.current) {
+      backFileInput.current.value = null;
+    }
+    
+  };
+
   const openEditModal = (row) => {
     setEditModalOpen(true);
     console.log(row);
@@ -258,7 +295,10 @@ const ManageCabs = () => {
       errorRate: row.errorRate,
       vehicleNumber: row.vehicleNumber,
       status: row.status,
+      cab_id:row._id,
     });
+    setCurrentId(row._id);
+
   };
 
   const closeEditModal = (row) => {
@@ -274,12 +314,60 @@ const ManageCabs = () => {
     setDeleteModalOpen(false);
   };
 
-  const handleEdit = () => {
-    console.log("edit",editCab);
 
+  const handleEdit = async () => {
+    // console.log("edit",editCab);
+    setIsDisabled(true)
     if(!handleValidation()){
       return;
     }
+    editCab.fileUploadURL=editCab.vehicleFrontImage;
+    editCab.fileUploadURL1=editCab.vehicleBackImage;
+    // editCab.image3 = editCab.v
+    if(frontImage){
+      console.log("hi")
+      const frontImageURL = await uploadImageToFirebase(frontImage, "front");
+      editCab.fileUploadURL = frontImageURL;
+    }
+    if(backImage){
+      console.log("hello")
+      const backImageURL = await uploadImageToFirebase(backImage, "back");
+      editCab.image2 = backImageURL;
+    }
+    // if(centerImage){
+    //   console.log("hello")
+    //   const centerImageURL = await uploadImageToFirebase(backImage, "back");
+    //   editCab.image2 = centerImageURL;
+    // }
+    console.log('success',editCab.image1,editCab.image2);
+    try{
+      const token = localStorage.getItem("Token");
+      await axios.patch(`${UPDATE_CAB}/${currentId}`,editCab, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      toast.success("Updated Successfully!");
+      setIsRefresh(false);
+      setEditModalOpen(false);
+      setTimeout(()=>{
+        setIsRefresh(true);
+      },500)
+    }
+    catch(error){
+      console.log(error)
+    }
+    finally{
+      setIsDisabled(false)
+    }
+
+
+
+
+
+
+    resetCab();
+    
 
     setEditModalOpen(false);
   };
@@ -298,7 +386,7 @@ const ManageCabs = () => {
       setDeleteModalOpen(false);
       setIsRefresh(true);
     } catch (error) {
-      console.error("Error deleting pricing data", error);
+      console.error("Error deleting Cab data", error);
     }
   };
 
@@ -314,6 +402,7 @@ const ManageCabs = () => {
     const get_form = async () => {
       try {
         setRefresh(false);
+
         const get_data = await axios.get(
           `${GET_ALL_CAB}?vehicleType=${searchData.vehicleType}&page=${searchData.page}&limit=${searchData.limit}`
         );
@@ -621,14 +710,14 @@ const ManageCabs = () => {
           </DialogContent>
           <DialogActions>
             <Button
-              onClick={() => closeEditModal()}
+              onClick={() => {closeEditModal();resetCab()}}
               color="error"
               variant="outlined"
             >
               Cancel
             </Button>
-            <Button onClick={handleEdit} color="secondary" variant="outlined">
-              Save
+            <Button onClick={handleEdit} disabled={isdisabled} color="secondary" variant="outlined">
+              Update
             </Button>
           </DialogActions>
         </Dialog>

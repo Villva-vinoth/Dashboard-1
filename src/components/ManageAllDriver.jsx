@@ -282,8 +282,12 @@ const ManageAllDriver = () => {
   return (
     <Container maxWidth="xl">
       <Box display="flex" flexDirection="column" alignItems="" mb={1}>
+        <Box display="flex" justifyContent="space-between">
         <Header title="Drivers" subtitle="Managing the Drivers Details" />
-
+            <Box display="flex" justifyContent="center" alignItems="center">
+              <Button color="secondary" variant="outlined" onClick={()=>nav('/admin/add-drivers')}> Add Pricing</Button>
+              </Box>
+        </Box>
         <Box display="flex" gap={2}flexWrap="wrap">
           <TextField
             placeholder="Phone Number"
