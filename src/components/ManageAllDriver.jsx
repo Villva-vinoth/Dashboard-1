@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   GET_ALL_DRIVERS,
   EDIT_PRICING,
   DELETE_PRICING,
+  firebaseConfig,
 } from "../service/ApiService";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -34,7 +35,16 @@ import lottieData from "../Asset/carLoader.json";
 import { tokens } from "../theme";
 import { useNavigate } from "react-router-dom";
 import Header from "./Header";
+import { initializeApp } from "firebase/app";
+import {
+  getStorage,
+  ref,
+  uploadBytesResumable,
+  getDownloadURL,
+} from "firebase/storage";
 
+initializeApp(firebaseConfig);
+const storage = getStorage();
 const ManageAllDriver = () => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
@@ -49,6 +59,7 @@ const ManageAllDriver = () => {
     return istTime;
   };
 
+  const [isdisabled, setIsDisabled] = useState(false);
   const columns = [
     {
       field: "FullName",
@@ -87,20 +98,37 @@ const ManageAllDriver = () => {
       flex: 1,
       renderCell: (params) => (
         <Box display="flex" gap={1}>
-          {/* <Button
+          <Button
             onClick={() => openModel(params.row)}
             startIcon={<FaEdit />}
-            color="primary"
-          /> */}
-          <Button
-            onClick={() => ""}
-            startIcon={<MdGridView size={20} />}
             color="secondary"
           />
         </Box>
       ),
     },
   ];
+
+  const [editDriver, setEditDriver] = useState({
+    driverFirstName: "",
+    driverLastName: "",
+    driverEmailId: "",
+    driverPhonePrimary: "",
+    driverPhoneSecondary: "",
+    driverAge: "",
+    driverGender: { value: "" },
+    driverNationality: { value: "" },
+    driverApplicationLanguage: { value: "" },
+    driverApplicationSetup: { value: "" },
+    driverLicenseLocation: { value: "" },
+    driverLicenseLocationDistrict: { value: "" },
+    driverHomeAddress: "",
+    driverPicture: "",
+    driverAadhaarNumber: "",
+    driverLicenseNumber: "",
+    driverAadharImage: "",
+    driverLicenseImage: "",
+    driverVehicleNumber: "",
+  });
 
   const [currentId, setCurrentId] = useState("");
   const [searchData, setSearchData] = useState({
@@ -124,6 +152,61 @@ const ManageAllDriver = () => {
       to: "",
     },
   });
+
+  const frontFileInputs = useRef(null);
+  const backFileInputs = useRef(null);
+  const centerFileInputs = useRef(null);
+
+  const [driverPic, setDriverPic] = useState(null);
+  const [AadharImage, setAadharImage] = useState(null);
+  const [LicenseImage, setLicenseImage] = useState(null);
+  const [uploadProgress, setUploadProgress] = useState({
+    DrivePic: 0,
+    AadharPic: 0,
+    LicensePic: 0,
+  });
+
+  const uploadImageToFirebase = (file, type) => {
+    return new Promise((resolve, reject) => {
+      const storageRef = ref(storage, `images/${file.name}`);
+      const uploadTask = uploadBytesResumable(storageRef, file);
+
+      uploadTask.on(
+        "state_changed",
+        (snapshot) => {
+          const progress = Math.round(
+            (snapshot.bytesTransferred / snapshot.totalBytes) * 100
+          );
+          setUploadProgress((prev) => ({ ...prev, [type]: progress }));
+        },
+        (error) => {
+          console.error("Image upload error:", error);
+          reject(error);
+        },
+        async () => {
+          const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+          resolve(downloadURL);
+        }
+      );
+    });
+  };
+
+  const handleUploadImage = (e, type) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (type === "DrivePic") {
+        setDriverPic(file);
+        setEditDriver({ ...editDriver, driverPicture: file });
+      } else if (type === "AadharPic") {
+        setAadharImage(file);
+        setEditDriver({ ...editDriver, driverAadharImage: file });
+      } else if (type === "LicensePic") {
+        setLicenseImage(file);
+        setEditDriver({ ...editDriver, driverLicenseImage: file });
+      }
+    }
+  };
+
   const [refresh, setRefresh] = useState(true);
   const [isRefresh, setIsRefresh] = useState(false);
 
@@ -163,6 +246,42 @@ const ManageAllDriver = () => {
     getFormData();
   }, [isRefresh]);
 
+  const resetDriver = () => {
+    setEditDriver({
+      driverFirstName: "",
+      driverLastName: "",
+      driverEmailId: "",
+      driverPhonePrimary: "",
+      driverPhoneSecondary: "",
+      driverAge: "",
+      driverGender: { value: "" },
+      driverNationality: { value: "" },
+      driverApplicationLanguage: { value: "" },
+      driverApplicationSetup: { value: "" },
+      driverLicenseLocation: { value: "" },
+      driverLicenseLocationDistrict: { value: "" },
+      driverHomeAddress: "",
+      driverPicture: "",
+      driverAadhaarNumber: "",
+      driverLicenseNumber: "",
+      driverAadharImage: "",
+      driverLicenseImage: "",
+      driverVehicleNumber: "",
+    });
+    setDriverPic(null);
+    setAadharImage(null);
+    setLicenseImage(null);
+    if (frontFileInputs.current) {
+      frontFileInputs.current.value = null;
+    }
+    if (backFileInputs.current) {
+      backFileInputs.current.value = null;
+    }
+    if (centerFileInputs.current) {
+      centerFileInputs.current.value = null;
+    }
+  };
+
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
 
@@ -181,28 +300,29 @@ const ManageAllDriver = () => {
 
   const openModel = (row) => {
     setEditModalOpen(true);
-    const formatDate = (date) => {
-      const d = new Date(date);
-      const year = d.getFullYear();
-      const month = `0${d.getMonth() + 1}`.slice(-2);
-      const day = `0${d.getDate()}`.slice(-2);
-      const hours = `0${d.getHours()}`.slice(-2);
-      const minutes = `0${d.getMinutes()}`.slice(-2);
-      return `${year}-${month}-${day}T${hours}:${minutes}`;
-    };
-
-    setPricingData({
-      vehicleType: row.vehicleType,
-      baseFare: row.baseFare,
-      perKmFare: row.perKmFare,
-      minimumFare: row.minimumFare,
-      city: row.city,
-      timeFare: row.timeFare,
-      waitingFare: row.waitingFare,
-      peakFare: {
-        from: formatDate(row.peakFare.from),
-        to: formatDate(row.peakFare.to),
+    console.log(row);
+    setEditDriver({
+      driverFirstName: row.driverFirstName,
+      driverLastName: row.driverLastName,
+      driverEmailId: row.driverEmailId,
+      driverPhonePrimary: row.driverPhonePrimary,
+      driverPhoneSecondary: row.driverPhoneSecondary,
+      driverAge: row.driverAge,
+      driverGender: { value: row.driverGender },
+      driverNationality: { value: row.driverNationality },
+      driverApplicationLanguage: { value: row.driverApplicationLanguage },
+      driverApplicationSetup: { value: row.driverApplicationSetup },
+      driverLicenseLocation: { value: row.driverLicenseLocation },
+      driverLicenseLocationDistrict: {
+        value: row.driverLicenseLocationDistrict,
       },
+      driverHomeAddress: row.driverHomeAddress,
+      driverPicture: row.driverPicture,
+      driverAadhaarNumber: row.driverAadhaarNumber,
+      driverLicenseNumber: row.driverLicenseNumber,
+      driverAadharImage: row.driverAadharImage,
+      driverLicenseImage: row.driverLicenseImage,
+      driverVehicleNumber: row.driverVehicleNumber,
     });
     setCurrentId(row._id);
   };
@@ -213,6 +333,16 @@ const ManageAllDriver = () => {
 
   const handleChange = (e) => {
     setSearchData({ ...searchData, [e.target.name]: e.target.value });
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    const keys = name.split(".");
+    if (keys.length == 2) {
+      // setDriver({ ...driver, [keys[0]]: {...keys[0], [keys[1]]: value } });
+    } else {
+      // setDriver({ ...driver, [name]: value });
+    }
   };
 
   const handleEdit = async () => {
@@ -283,38 +413,57 @@ const ManageAllDriver = () => {
     <Container maxWidth="xl">
       <Box display="flex" flexDirection="column" alignItems="" mb={1}>
         <Box display="flex" justifyContent="space-between">
-        <Header title="Drivers" subtitle="Managing the Drivers Details" />
-            <Box display="flex" justifyContent="center" alignItems="center">
-              <Button color="secondary" variant="outlined" onClick={()=>nav('/admin/add-drivers')}> Add Pricing</Button>
-              </Box>
+          <Header title="Drivers" subtitle="Managing the Drivers Details" />
+          <Box display="flex" justifyContent="center" alignItems="center">
+            <Button
+              color="secondary"
+              variant="outlined"
+              onClick={() => nav("/admin/add-drivers")}
+            >
+              {" "}
+              Add Driver
+            </Button>
+          </Box>
         </Box>
-        <Box display="flex" gap={2}flexWrap="wrap">
+        <Box display="flex" gap={2} flexWrap="wrap">
           <TextField
             placeholder="Phone Number"
             name="phoneNumber"
             value={searchData.phoneNumber}
-            onChange={(e)=>{handleChange(e);handleSearch()}}
+            onChange={(e) => {
+              handleChange(e);
+              handleSearch();
+            }}
             variant="filled"
           />
           <TextField
             placeholder="Name"
             name="name"
             value={searchData.name}
-            onChange={(e)=>{handleChange(e);handleSearch()}}
+            onChange={(e) => {
+              handleChange(e);
+              handleSearch();
+            }}
             variant="filled"
           />
           <TextField
             placeholder="Vehicle Number"
             name="vehicleNumber"
             value={searchData.vehicleNumber}
-            onChange={(e)=>{handleChange(e);handleSearch()}}
+            onChange={(e) => {
+              handleChange(e);
+              handleSearch();
+            }}
             variant="filled"
           />
           <TextField
             placeholder="Driver Id"
             name="driverId"
             value={searchData.driverId}
-            onChange={(e)=>{handleChange(e);handleSearch()}}
+            onChange={(e) => {
+              handleChange(e);
+              handleSearch();
+            }}
             variant="filled"
           />
           {/* <Button
@@ -373,120 +522,286 @@ const ManageAllDriver = () => {
 
       {/* Edit Modal */}
       <Dialog open={editModalOpen} onClose={closeModal}>
-        <DialogTitle>Edit Pricing</DialogTitle>
+        <DialogTitle>Edit Driver</DialogTitle>
         <DialogContent>
           <DialogContentText>
-            Please fill in the form to edit the pricing details.
+            Please fill in the form to edit the Driver details.
           </DialogContentText>
-          <FormControl fullWidth margin="normal">
-            <InputLabel>Vehicle Type</InputLabel>
-            <Select
-              name="vehicleType"
-              value={pricingData.vehicleType}
-              onChange={(e) =>
-                setPricingData({ ...pricingData, vehicleType: e.target.value })
-              }
+          <Box mt="20px" p="10px" borderRadius="8px" sx={{}}>
+            <Box>
+              <input
+                ref={frontFileInputs}
+                accept="image/*"
+                type="file"
+                style={{ display: "none" }}
+                onChange={(e) => handleUploadImage(e, "front")}
+              />
+              <Button
+                color="secondary"
+                variant="outlined"
+                onClick={() => frontFileInputs.current.click()}
+              >
+                Upload Front Image
+              </Button>
+              {editDriver.driverPicture && (
+                <Box mt={2}>
+                  <img
+                    src={editDriver.driverPicture}
+                    alt="Front"
+                    style={{
+                      width: "100px",
+                      height: "100px",
+                      objectFit: "contain",
+                      // margin: "1%",
+                    }}
+                  />
+                </Box>
+              )}
+            </Box>
+            <Box>
+              <input
+                ref={backFileInputs}
+                accept="image/*"
+                type="file"
+                style={{ display: "none" }}
+                onChange={(e) => handleUploadImage(e, "back")}
+              />
+              <Button
+                color="secondary"
+                variant="outlined"
+                onClick={() => backFileInputs.current.click()}
+              >
+                Upload Aadhar Image
+              </Button>
+              {editDriver.driverAadharImage && (
+                <Box mt={2}>
+                  <img
+                    src={editDriver.driverAadharImage}
+                    alt="Back"
+                    style={{
+                      width: "100px",
+                      height: "100px",
+                      objectFit: "contain",
+                      // margin: "1%",
+                    }}
+                  />
+                </Box>
+              )}
+            </Box>
+            <Box>
+              <input
+                ref={backFileInputs}
+                accept="image/*"
+                type="file"
+                style={{ display: "none" }}
+                onChange={(e) => handleUploadImage(e, "back")}
+              />
+              <Button
+                color="secondary"
+                variant="outlined"
+                onClick={() => centerFileInputs.current.click()}
+              >
+                Upload License Image
+              </Button>
+              {editDriver.driverLicenseImage && (
+                <Box mt={2}>
+                  <img
+                    src={editDriver.driverLicenseImage}
+                    alt="Back"
+                    style={{
+                      width: "100px",
+                      height: "100px",
+                      objectFit: "contain",
+                      // margin: "1%",
+                    }}
+                  />
+                </Box>
+              )}
+            </Box>
+            <Box
+              display="grid"
+              gridTemplateColumns="repeat(2, 1fr)"
+              gap="20px"
+              margin="2% 0%"
             >
-              <MenuItem value="Type 1">Type 1</MenuItem>
-              <MenuItem value="Type 2">Type 2</MenuItem>
-              <MenuItem value="Type 3">Type 3</MenuItem>
-            </Select>
-          </FormControl>
-          <TextField
-            fullWidth
-            margin="normal"
-            name="baseFare"
-            label="Base Fare"
-            value={pricingData.baseFare}
-            onChange={(e) =>
-              setPricingData({ ...pricingData, baseFare: e.target.value })
-            }
-          />
-          <TextField
-            fullWidth
-            margin="normal"
-            name="perKmFare"
-            label="Per Km Fare"
-            value={pricingData.perKmFare}
-            onChange={(e) =>
-              setPricingData({ ...pricingData, perKmFare: e.target.value })
-            }
-          />
-          <TextField
-            fullWidth
-            margin="normal"
-            name="minimumFare"
-            label="Minimum Fare"
-            value={pricingData.minimumFare}
-            onChange={(e) =>
-              setPricingData({ ...pricingData, minimumFare: e.target.value })
-            }
-          />
-          <TextField
-            fullWidth
-            margin="normal"
-            name="city"
-            label="City"
-            value={pricingData.city}
-            onChange={(e) =>
-              setPricingData({ ...pricingData, city: e.target.value })
-            }
-          />
-          <TextField
-            fullWidth
-            margin="normal"
-            name="timeFare"
-            label="Time Fare"
-            value={pricingData.timeFare}
-            onChange={(e) =>
-              setPricingData({ ...pricingData, timeFare: e.target.value })
-            }
-          />
-          <TextField
-            fullWidth
-            margin="normal"
-            name="waitingFare"
-            label="Waiting Fare"
-            value={pricingData.waitingFare}
-            onChange={(e) =>
-              setPricingData({ ...pricingData, waitingFare: e.target.value })
-            }
-          />
-          <TextField
-            fullWidth
-            margin="normal"
-            name="peakFare.from"
-            label="Peak Fare From"
-            type="datetime-local"
-            value={pricingData.peakFare.from}
-            onChange={(e) =>
-              setPricingData({
-                ...pricingData,
-                peakFare: { ...pricingData.peakFare, from: e.target.value },
-              })
-            }
-          />
-          <TextField
-            fullWidth
-            margin="normal"
-            name="peakFare.to"
-            label="Peak Fare To"
-            type="datetime-local"
-            value={pricingData.peakFare.to}
-            onChange={(e) =>
-              setPricingData({
-                ...pricingData,
-                peakFare: { ...pricingData.peakFare, to: e.target.value },
-              })
-            }
-          />
+              <TextField
+                label="FirstName"
+                variant="filled"
+                fullWidth
+                name="driverFirstName"
+                value={editDriver.driverFirstName}
+                onChange={handleInputChange}
+              />
+
+              <TextField
+                label="Last Name"
+                variant="filled"
+                fullWidth
+                name="driverLastName"
+                value={editDriver.driverLastName}
+                onChange={handleInputChange}
+              />
+              <TextField
+                label="Email Id"
+                variant="filled"
+                fullWidth
+                name="driverEmailId"
+                value={editDriver.driverEmailId}
+                onChange={handleInputChange}
+              />
+              <TextField
+                label="Phone Primary"
+                variant="filled"
+                fullWidth
+                name="driverPhonePrimary"
+                value={editDriver.driverPhonePrimary}
+                onChange={handleInputChange}
+              />
+              <TextField
+                label="Phone Secondary"
+                variant="filled"
+                fullWidth
+                name="driverPhoneSecondary"
+                value={editDriver.driverPhoneSecondary}
+                onChange={handleInputChange}
+              />
+              <TextField
+                label="Age"
+                variant="filled"
+                fullWidth
+                name="driverAge"
+                value={editDriver.driverAge}
+                onChange={handleInputChange}
+              />
+
+              <FormControl fullWidth>
+                <InputLabel>Gender</InputLabel>
+                <Select
+                  name="driverGender.value"
+                  value={editDriver.driverGender.value}
+                  onChange={handleInputChange}
+                  variant="filled"
+                >
+                  <MenuItem value="Male">Male</MenuItem>
+                  <MenuItem value="Female">Female</MenuItem>
+                  <MenuItem value="Other">Other</MenuItem>
+                </Select>
+              </FormControl>
+
+              <FormControl fullWidth>
+                <InputLabel>Nationality</InputLabel>
+                <Select
+                  name="driverNationality.value"
+                  value={editDriver.driverNationality.value}
+                  onChange={handleInputChange}
+                  variant="filled"
+                >
+                  <MenuItem value="Indian">Indian</MenuItem>
+                </Select>
+              </FormControl>
+
+              <FormControl fullWidth>
+                <InputLabel>Language</InputLabel>
+                <Select
+                  name="driverApplicationLanguage.value"
+                  value={editDriver.driverApplicationLanguage.value}
+                  onChange={handleInputChange}
+                  variant="filled"
+                >
+                  <MenuItem value="Tamil">Tamil</MenuItem>
+                  <MenuItem value="Telugu">Telugu</MenuItem>
+                  <MenuItem value="malayalam">malayalam</MenuItem>
+                </Select>
+              </FormControl>
+
+              <FormControl fullWidth>
+                <InputLabel>ApplicationSetup</InputLabel>
+                <Select
+                  name="driverApplicationSetup.value"
+                  value={editDriver.driverApplicationSetup.value}
+                  onChange={handleInputChange}
+                  variant="filled"
+                >
+                  <MenuItem value="Normal">Normal</MenuItem>
+                </Select>
+              </FormControl>
+
+              <FormControl fullWidth>
+                <InputLabel>LicenseLocation</InputLabel>
+                <Select
+                  name="driverLicenseLocation.value"
+                  value={editDriver.driverLicenseLocation.value}
+                  onChange={handleInputChange}
+                  variant="filled"
+                >
+                  <MenuItem value="TamilNadu">TamilNadu</MenuItem>
+                </Select>
+              </FormControl>
+              <FormControl fullWidth>
+                <InputLabel>LicenseLocationDistrict</InputLabel>
+                <Select
+                  name="driverLicenseLocationDistrict.value"
+                  value={editDriver.driverLicenseLocationDistrict.value}
+                  onChange={handleInputChange}
+                  variant="filled"
+                >
+                  <MenuItem value="Madurai">Madurai</MenuItem>
+                </Select>
+              </FormControl>
+
+              <TextField
+                label="Home Address"
+                variant="filled"
+                fullWidth
+                name="driverHomeAddress"
+                value={editDriver.driverHomeAddress}
+                onChange={handleInputChange}
+              />
+              <TextField
+                label="Aadhaar Number"
+                variant="filled"
+                fullWidth
+                name="driverAadhaarNumber"
+                value={editDriver.driverAadhaarNumber}
+                onChange={handleInputChange}
+              />
+              <TextField
+                label="License Number"
+                variant="filled"
+                fullWidth
+                name="driverLicenseNumber"
+                value={editDriver.driverLicenseNumber}
+                onChange={handleInputChange}
+              />
+              <TextField
+                label="Vehicle Number"
+                variant="filled"
+                fullWidth
+                name="driverVehicleNumber"
+                value={editDriver.driverVehicleNumber}
+                onChange={handleInputChange}
+              />
+            </Box>
+          </Box>
         </DialogContent>
         <DialogActions>
-          <Button onClick={closeModal} color="secondary">
+          <Button
+            onClick={() => {
+              closeModal();
+              resetDriver();
+            }}
+            color="error"
+            variant="outlined"
+          >
             Cancel
           </Button>
-          <Button onClick={handleEdit} color="primary">
-            Save
+          <Button
+            onClick={handleEdit}
+            disabled={isdisabled}
+            color="secondary"
+            variant="outlined"
+          >
+            Update
           </Button>
         </DialogActions>
       </Dialog>
@@ -503,7 +818,7 @@ const ManageAllDriver = () => {
         </DialogTitle>
         <DialogContent>
           <DialogContentText id="alert-dialog-description">
-            Are you sure you want to delete this pricing data?
+            Are you sure you want to delete this Driver data?
           </DialogContentText>
         </DialogContent>
         <DialogActions>

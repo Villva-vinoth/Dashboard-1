@@ -43,12 +43,12 @@ const AddDriver = () => {
     driverPhonePrimary: "",
     driverPhoneSecondary: "",
     driverAge: "",
-    driverGender: "",
-    driverNationality: "",
-    driverApplicationLanguage: "",
-    driverApplicationSetup: "",
-    driverLicenseLocation: "",
-    driverLicenseLocationDistrict: "",
+    driverGender: { value: "" },
+    driverNationality: { value: "" },
+    driverApplicationLanguage: { value: "" },
+    driverApplicationSetup: { value: "" },
+    driverLicenseLocation: { value: "" },
+    driverLicenseLocationDistrict: { value: "" },
     driverHomeAddress: "",
     driverPicture: "",
     driverAadhaarNumber: "",
@@ -91,12 +91,12 @@ const AddDriver = () => {
       driverPhonePrimary: "",
       driverPhoneSecondary: "",
       driverAge: "",
-      driverGender: "",
-      driverNationality: "",
-      driverApplicationLanguage: "",
-      driverApplicationSetup: "",
-      driverLicenseLocation: "",
-      driverLicenseLocationDistrict: "",
+      driverGender: { value: "" },
+      driverNationality: { value: "" },
+      driverApplicationLanguage: { value: "" },
+      driverApplicationSetup: { value: "" },
+      driverLicenseLocation: { value: "" },
+      driverLicenseLocationDistrict: { value: "" },
       driverHomeAddress: "",
       driverPicture: "",
       driverAadhaarNumber: "",
@@ -187,14 +187,19 @@ const AddDriver = () => {
     if (!handleValidation()) return;
 
     try {
-
       const driverPicurl = await uploadImageToFirebase(driverPic, "DrivePic");
-      const AadharImageurl = await uploadImageToFirebase(AadharImage, "AadharPic");
-      const LicenseImageurl = await uploadImageToFirebase(LicenseImage, "LicensePic");
+      const AadharImageurl = await uploadImageToFirebase(
+        AadharImage,
+        "AadharPic"
+      );
+      const LicenseImageurl = await uploadImageToFirebase(
+        LicenseImage,
+        "LicensePic"
+      );
 
       driver.driverPicture = driverPicurl;
       driver.driverAadharImage = AadharImageurl;
-      driver.driverLicenseNumber = LicenseImageurl;
+      driver.driverLicenseImage = LicenseImageurl;
 
       // console.log(frontImageURL, backImageURL, centerImageURL);
       console.log(driver);
@@ -218,13 +223,23 @@ const AddDriver = () => {
       }
     } catch (error) {
       console.error("Error adding Driver:", error);
-      toast.error("Failed to add Drivers.");
+      if(error.response){
+        toast.error(error.response.data.message)
+      }
+      else{
+        toast.error("Failed to add Drivers.");
+      }
     }
   };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setDriver({ ...driver, [name]: value });
+    const keys = name.split(".");
+    if ((keys.length == 2)) {
+      setDriver({ ...driver, [keys[0]]: {...keys[0], [keys[1]]: value } });
+    } else {
+      setDriver({ ...driver, [name]: value });
+    }
   };
 
   return (
@@ -233,15 +248,12 @@ const AddDriver = () => {
         {/* <Typography variant="h4" color={colors.grey[100]}>
           Add Cab
         </Typography> */}
-        <Header
-          title="Add Driver"
-          subtitle="Add Driver details"
-        />
+        <Header title="Add Driver" subtitle="Add Driver details" />
         <Box display="flex" justifyContent="center" alignItems="center">
           <Button
             color="secondary"
             variant="outlined"
-            onClick={() => nav("/drivers")}
+            onClick={() => nav("/admin/drivers")}
           >
             View Drivers
           </Button>{" "}
@@ -252,7 +264,7 @@ const AddDriver = () => {
         mt="40px"
         p="20px"
         borderRadius="8px"
-      // sx={{ backgroundColor: colors.primary[400], color: colors.grey[100] }}
+        // sx={{ backgroundColor: colors.primary[400], color: colors.grey[100] }}
       >
         <Box
           sx={{
@@ -266,6 +278,7 @@ const AddDriver = () => {
               flexDirection: "column",
             }}
           >
+            <label>Driver picture</label>
             {driverPic && (
               <img
                 src={URL.createObjectURL(driverPic)}
@@ -297,6 +310,8 @@ const AddDriver = () => {
               flexDirection: "column",
             }}
           >
+            <label>Aadhar Image</label>
+
             {AadharImage && (
               <img
                 src={URL.createObjectURL(AadharImage)}
@@ -327,6 +342,8 @@ const AddDriver = () => {
               flexDirection: "column",
             }}
           >
+            <label>Lincense Image</label>
+
             {LicenseImage && (
               <img
                 src={URL.createObjectURL(LicenseImage)}
@@ -411,8 +428,8 @@ const AddDriver = () => {
           <FormControl fullWidth>
             <InputLabel>Gender</InputLabel>
             <Select
-              name="driverGender"
-              value={driver.driverGender}
+              name="driverGender.value"
+              value={driver.driverGender.value}
               onChange={handleInputChange}
               variant="filled"
             >
@@ -425,64 +442,61 @@ const AddDriver = () => {
           <FormControl fullWidth>
             <InputLabel>Nationality</InputLabel>
             <Select
-              name="driverNationality"
-              value={driver.driverNationality}
+              name="driverNationality.value"
+              value={driver.driverNationality.value}
               onChange={handleInputChange}
               variant="filled"
             >
               <MenuItem value="Indian">Indian</MenuItem>
-
             </Select>
           </FormControl>
 
           <FormControl fullWidth>
             <InputLabel>Language</InputLabel>
             <Select
-              name="driverApplicationLanguage"
-              value={driver.driverApplicationLanguage}
+              name="driverApplicationLanguage.value"
+              value={driver.driverApplicationLanguage.value}
               onChange={handleInputChange}
               variant="filled"
             >
               <MenuItem value="Tamil">Tamil</MenuItem>
-
+              <MenuItem value="Telugu">Telugu</MenuItem>
+              <MenuItem value="malayalam">malayalam</MenuItem>
             </Select>
           </FormControl>
 
           <FormControl fullWidth>
             <InputLabel>ApplicationSetup</InputLabel>
             <Select
-              name="driverApplicationSetup"
-              value={driver.driverApplicationSetup}
+              name="driverApplicationSetup.value"
+              value={driver.driverApplicationSetup.value}
               onChange={handleInputChange}
               variant="filled"
             >
               <MenuItem value="Normal">Normal</MenuItem>
-
             </Select>
           </FormControl>
 
           <FormControl fullWidth>
             <InputLabel>LicenseLocation</InputLabel>
             <Select
-              name="driverLicenseLocation"
-              value={driver.driverLicenseLocation}
+              name="driverLicenseLocation.value"
+              value={driver.driverLicenseLocation.value}
               onChange={handleInputChange}
               variant="filled"
             >
               <MenuItem value="TamilNadu">TamilNadu</MenuItem>
-
             </Select>
           </FormControl>
           <FormControl fullWidth>
             <InputLabel>LicenseLocationDistrict</InputLabel>
             <Select
-              name="driverLicenseLocationDistrict"
-              value={driver.driverLicenseLocationDistrict}
+              name="driverLicenseLocationDistrict.value"
+              value={driver.driverLicenseLocationDistrict.value}
               onChange={handleInputChange}
               variant="filled"
             >
               <MenuItem value="Madurai">Madurai</MenuItem>
-
             </Select>
           </FormControl>
 
@@ -519,12 +533,14 @@ const AddDriver = () => {
             onChange={handleInputChange}
           />
         </Box>
-        <Box sx={{
-          display: "flex",
-          justifyContent: "end",
-          gap: "10px",
-          mt: "20px"
-        }}>
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "end",
+            gap: "10px",
+            mt: "20px",
+          }}
+        >
           <Button
             variant="outlined"
             color="secondary"
@@ -544,7 +560,7 @@ const AddDriver = () => {
           <Button
             variant="outlined"
             color="secondary"
-            onClick={() => nav('/admin/drivers')}
+            onClick={() => nav("/admin/drivers")}
             style={{ marginTop: "20px" }}
           >
             cancel

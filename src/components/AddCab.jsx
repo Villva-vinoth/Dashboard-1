@@ -56,9 +56,7 @@ const AddCab = () => {
     safetyRate: "",
     errorRate: "",
     vehicleNumber: "",
-    peak_current: "",
     status: "",
-    operating_mode: "",
   });
 
   const [frontImage, setFrontImage] = useState(null);
@@ -106,9 +104,7 @@ const AddCab = () => {
       safetyRate: "",
       errorRate: "",
       vehicleNumber: "",
-      peak_current: "",
       status: "",
-      operating_mode: "",
     });
     setFrontImage(null);
     setBackImage(null);
@@ -446,14 +442,6 @@ const AddCab = () => {
             </Select>
           </FormControl>
           <TextField
-            label="Operating Mode"
-            variant="filled"
-            fullWidth
-            name="operating_mode"
-            value={cab.operating_mode}
-            onChange={handleInputChange}
-          />
-          <TextField
             label="Comfort Level"
             variant="filled"
             fullWidth
@@ -493,14 +481,7 @@ const AddCab = () => {
             value={cab.vehicleNumber}
             onChange={handleInputChange}
           />
-          <TextField
-            label="Peak Current"
-            variant="filled"
-            fullWidth
-            name="peak_current"
-            value={cab.peak_current}
-            onChange={handleInputChange}
-          />
+          
         </Box>
         <Box sx={{
           display:"flex" ,

@@ -35,7 +35,7 @@ export const DELETE_SUBCRIPTION = `${BASEURL}/api/web/subscription`
 // Driver
 
 export const GET_ALL_DRIVERS =`${BASEURL}/api/web/getAllDrivers`
-export const CREATE_DRIVER = `${BASEURL}/api/web/create/new` 
+export const CREATE_DRIVER = `${BASEURL}/api/web/driver/create/new` 
 
 // Rider
 

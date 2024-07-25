@@ -505,10 +505,10 @@ const ManageCabs = () => {
 
         {/* Edit Modal */}
         <Dialog open={editModalOpen} onClose={closeEditModal}>
-          <DialogTitle>Edit Pricing</DialogTitle>
+          <DialogTitle>Edit Cab</DialogTitle>
           <DialogContent>
             <DialogContentText>
-              Please fill in the form to edit the pricing details.
+              Please fill in the form to edit the cab details.
             </DialogContentText>
             <Box
               mt="20px"
