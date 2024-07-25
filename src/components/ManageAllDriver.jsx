@@ -796,7 +796,7 @@ const ManageAllDriver = () => {
             Cancel
           </Button>
           <Button
-            onClick={handleEdit}
+            // onClick={handleEdit}
             disabled={isdisabled}
             color="secondary"
             variant="outlined"
