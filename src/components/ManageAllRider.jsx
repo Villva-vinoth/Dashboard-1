@@ -3,6 +3,7 @@ import {
   GET_ALL_RIDERS,
   EDIT_PRICING,
   DELETE_PRICING,
+  UPDATE_RIDER,
 } from "../service/ApiService";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -90,7 +91,7 @@ const ManageAllRider = () => {
       renderCell: (params) => (
         <Box display="flex" gap={1}>
           <Button
-            onClick={() => ""}
+            onClick={() => openModel(params.row)}
             startIcon={<MdGridView size={20} />}
             color="secondary"
           />
@@ -178,30 +179,18 @@ const ManageAllRider = () => {
     setDeleteModalOpen(false);
   };
 
+
+  const [editRider,setEditRider]=useState({
+    riderName: "",
+    riderPhoneNumber: "",
+  })
+
   const openModel = (row) => {
     setEditModalOpen(true);
-    const formatDate = (date) => {
-      const d = new Date(date);
-      const year = d.getFullYear();
-      const month = `0${d.getMonth() + 1}`.slice(-2);
-      const day = `0${d.getDate()}`.slice(-2);
-      const hours = `0${d.getHours()}`.slice(-2);
-      const minutes = `0${d.getMinutes()}`.slice(-2);
-      return `${year}-${month}-${day}T${hours}:${minutes}`;
-    };
-
-    setPricingData({
-      vehicleType: row.vehicleType,
-      baseFare: row.baseFare,
-      perKmFare: row.perKmFare,
-      minimumFare: row.minimumFare,
-      city: row.city,
-      timeFare: row.timeFare,
-      waitingFare: row.waitingFare,
-      peakFare: {
-        from: formatDate(row.peakFare.from),
-        to: formatDate(row.peakFare.to),
-      },
+    console.log("edit",row)
+    setEditRider({
+      riderName: row.riderName,
+      riderPhoneNumber: row.riderPhoneNumber,
     });
     setCurrentId(row._id);
   };
@@ -216,47 +205,28 @@ const ManageAllRider = () => {
 
   const handleEdit = async () => {
     if (
-      pricingData.vehicleType === "" ||
-      pricingData.baseFare === "" ||
-      pricingData.perKmFare === "" ||
-      pricingData.minimumFare === "" ||
-      pricingData.city === "" ||
-      pricingData.timeFare === "" ||
-      pricingData.waitingFare === "" ||
-      pricingData.peakFare.from === "" ||
-      pricingData.peakFare.to === ""
+      editRider.riderName === "" ||
+      editRider.riderPhoneNumber === "" 
     ) {
       toast.error("Please enter all the fields!");
     } else {
-      pricingData.peakFare.from = convertToISO(pricingData.peakFare.from);
-      pricingData.peakFare.to = convertToISO(pricingData.peakFare.to);
-      pricingData.peakFare.percent = "5";
       try {
         setIsRefresh(true);
         const token = localStorage.getItem("Token");
-        await axios.patch(`${EDIT_PRICING}/${currentId}`, pricingData, {
+        await axios.patch(`${UPDATE_RIDER}${currentId}`, editRider, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         });
         toast.success("Edited successfully!");
-        setPricingData({
-          vehicleType: "",
-          baseFare: "",
-          perKmFare: "",
-          minimumFare: "",
-          city: "",
-          timeFare: "",
-          waitingFare: "",
-          peakFare: {
-            from: "",
-            to: "",
-          },
+        setEditRider({
+          riderName: "",
+          riderPhoneNumber: "",
         });
         setEditModalOpen(false);
         setIsRefresh(false);
       } catch (error) {
-        toast.error("Error editing pricing data.");
+        toast.error("Error editing Rider data.");
       }
     }
   };
@@ -368,12 +338,12 @@ const ManageAllRider = () => {
 
       {/* Edit Modal */}
       <Dialog open={editModalOpen} onClose={closeModal}>
-        <DialogTitle>Edit Pricing</DialogTitle>
+        <DialogTitle>Edit Rider</DialogTitle>
         <DialogContent>
           <DialogContentText>
-            Please fill in the form to edit the pricing details.
+            Please fill in the form to edit the Rider details.
           </DialogContentText>
-          <FormControl fullWidth margin="normal">
+          {/* <FormControl fullWidth margin="normal">
             <InputLabel>Vehicle Type</InputLabel>
             <Select
               name="vehicleType"
@@ -386,28 +356,28 @@ const ManageAllRider = () => {
               <MenuItem value="Type 2">Type 2</MenuItem>
               <MenuItem value="Type 3">Type 3</MenuItem>
             </Select>
-          </FormControl>
+          </FormControl> */}
           <TextField
             fullWidth
             margin="normal"
-            name="baseFare"
-            label="Base Fare"
-            value={pricingData.baseFare}
+            name="riderName"
+            label="Rider Name"
+            value={editRider.riderName}
             onChange={(e) =>
-              setPricingData({ ...pricingData, baseFare: e.target.value })
+              setEditRider({ ...editRider, riderName: e.target.value })
             }
           />
           <TextField
             fullWidth
             margin="normal"
-            name="perKmFare"
-            label="Per Km Fare"
-            value={pricingData.perKmFare}
+            name="riderPhoneNumber"
+            label="Rider Phone Number"
+            value={editRider.riderPhoneNumber}
             onChange={(e) =>
-              setPricingData({ ...pricingData, perKmFare: e.target.value })
+              setEditRider({ ...editRider, riderPhoneNumber: e.target.value })
             }
           />
-          <TextField
+          {/* <TextField
             fullWidth
             margin="normal"
             name="minimumFare"
@@ -474,7 +444,7 @@ const ManageAllRider = () => {
                 peakFare: { ...pricingData.peakFare, to: e.target.value },
               })
             }
-          />
+          /> */}
         </DialogContent>
         <DialogActions>
           <Button onClick={closeModal} color="secondary">

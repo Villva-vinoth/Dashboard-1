@@ -41,7 +41,7 @@ export const UPDATE_DRIVER = `${BASEURL}/api/web/driver/getSingleDriverProfile?u
 
 
 export const GET_ALL_RIDERS = `${BASEURL}/api/web/getAllRiders`
-
+export const UPDATE_RIDER = `${BASEURL}/api/web/rider/getSingleRiderProfile?userId=`
 
 // cab
 
