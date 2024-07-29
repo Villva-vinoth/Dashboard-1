@@ -4,6 +4,7 @@ import {
   EDIT_PRICING,
   DELETE_PRICING,
   firebaseConfig,
+  UPDATE_DRIVER,
 } from "../service/ApiService";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -195,14 +196,17 @@ const ManageAllDriver = () => {
     const file = e.target.files[0];
     if (file) {
       if (type === "DrivePic") {
+        const imageUrl = URL.createObjectURL(file);
         setDriverPic(file);
-        setEditDriver({ ...editDriver, driverPicture: file });
+        setEditDriver({ ...editDriver, driverPicture: imageUrl });
       } else if (type === "AadharPic") {
+        const imageUrl = URL.createObjectURL(file);
         setAadharImage(file);
-        setEditDriver({ ...editDriver, driverAadharImage: file });
+        setEditDriver({ ...editDriver, driverAadharImage: imageUrl });
       } else if (type === "LicensePic") {
+        const imageUrl = URL.createObjectURL(file);
         setLicenseImage(file);
-        setEditDriver({ ...editDriver, driverLicenseImage: file });
+        setEditDriver({ ...editDriver, driverLicenseImage: imageUrl });
       }
     }
   };
@@ -254,12 +258,12 @@ const ManageAllDriver = () => {
       driverPhonePrimary: "",
       driverPhoneSecondary: "",
       driverAge: "",
-      driverGender: { value: "" },
-      driverNationality: { value: "" },
-      driverApplicationLanguage: { value: "" },
-      driverApplicationSetup: { value: "" },
-      driverLicenseLocation: { value: "" },
-      driverLicenseLocationDistrict: { value: "" },
+      driverGender: "",
+      driverNationality: "",
+      driverApplicationLanguage: "",
+      driverApplicationSetup: "",
+      driverLicenseLocation: "",
+      driverLicenseLocationDistrict: "",
       driverHomeAddress: "",
       driverPicture: "",
       driverAadhaarNumber: "",
@@ -308,14 +312,12 @@ const ManageAllDriver = () => {
       driverPhonePrimary: row.driverPhonePrimary,
       driverPhoneSecondary: row.driverPhoneSecondary,
       driverAge: row.driverAge,
-      driverGender: { value: row.driverGender },
-      driverNationality: { value: row.driverNationality },
-      driverApplicationLanguage: { value: row.driverApplicationLanguage },
-      driverApplicationSetup: { value: row.driverApplicationSetup },
-      driverLicenseLocation: { value: row.driverLicenseLocation },
-      driverLicenseLocationDistrict: {
-        value: row.driverLicenseLocationDistrict,
-      },
+      driverGender: row.driverGender,
+      driverNationality: row.driverNationality,
+      driverApplicationLanguage: row.driverApplicationLanguage,
+      driverApplicationSetup: row.driverApplicationSetup,
+      driverLicenseLocation: row.driverLicenseLocation,
+      driverLicenseLocationDistrict: row.driverLicenseLocationDistrict,
       driverHomeAddress: row.driverHomeAddress,
       driverPicture: row.driverPicture,
       driverAadhaarNumber: row.driverAadhaarNumber,
@@ -324,6 +326,7 @@ const ManageAllDriver = () => {
       driverLicenseImage: row.driverLicenseImage,
       driverVehicleNumber: row.driverVehicleNumber,
     });
+    console.log(editDriver.driverGender);
     setCurrentId(row._id);
   };
 
@@ -337,59 +340,96 @@ const ManageAllDriver = () => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    const keys = name.split(".");
-    if (keys.length == 2) {
-      // setDriver({ ...driver, [keys[0]]: {...keys[0], [keys[1]]: value } });
-    } else {
-      // setDriver({ ...driver, [name]: value });
+    setEditDriver({ ...editDriver, [name]: value });
+  };
+
+  const handleValidation = () => {
+    const {
+      driverFirstName,
+      driverPicture,
+      driverAadharImage,
+      driverLicenseImage,
+    } = editDriver;
+
+    if (driverFirstName === "") {
+      toast.error("driver Name should not be empty!", {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "dark",
+      });
+      return false;
     }
+
+    if (!driverPicture || !driverAadharImage || !driverLicenseImage) {
+      toast.error("Please upload all images!", {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "dark",
+      });
+      return false;
+    }
+
+    return true;
   };
 
   const handleEdit = async () => {
-    if (
-      pricingData.vehicleType === "" ||
-      pricingData.baseFare === "" ||
-      pricingData.perKmFare === "" ||
-      pricingData.minimumFare === "" ||
-      pricingData.city === "" ||
-      pricingData.timeFare === "" ||
-      pricingData.waitingFare === "" ||
-      pricingData.peakFare.from === "" ||
-      pricingData.peakFare.to === ""
-    ) {
-      toast.error("Please enter all the fields!");
-    } else {
-      pricingData.peakFare.from = convertToISO(pricingData.peakFare.from);
-      pricingData.peakFare.to = convertToISO(pricingData.peakFare.to);
-      pricingData.peakFare.percent = "5";
-      try {
-        setIsRefresh(true);
-        const token = localStorage.getItem("Token");
-        await axios.patch(`${EDIT_PRICING}/${currentId}`, pricingData, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        toast.success("Edited successfully!");
-        setPricingData({
-          vehicleType: "",
-          baseFare: "",
-          perKmFare: "",
-          minimumFare: "",
-          city: "",
-          timeFare: "",
-          waitingFare: "",
-          peakFare: {
-            from: "",
-            to: "",
-          },
-        });
-        setEditModalOpen(false);
-        setIsRefresh(false);
-      } catch (error) {
-        toast.error("Error editing pricing data.");
-      }
+    console.log("edit", editDriver);
+    setIsDisabled(true);
+    if (!handleValidation()) {
+      return;
     }
+    editDriver.driverPicture = editDriver.driverPicture;
+    editDriver.driverAadharImage = editDriver.driverAadharImage;
+    editDriver.driverLicenseImage = editDriver.driverLicenseImage;
+
+    if (driverPic) {
+      console.log("hi");
+      const frontImageURL = await uploadImageToFirebase(driverPic, "DrivePic");
+      editDriver.driverPicture = frontImageURL;
+    }
+    if (AadharImage) {
+      console.log("hello");
+      const backImageURL = await uploadImageToFirebase(AadharImage, "AadharPic");
+      editDriver.driverAadharImage = backImageURL;
+    }
+    if (LicenseImage) {
+      console.log("hehello");
+      const centerImageURL = await uploadImageToFirebase(LicenseImage, "LicensePic");
+      editDriver.driverLicenseImage = centerImageURL;
+    }
+    // console.log('success',editCab.image1,editCab.image2);
+    try {
+      const token = localStorage.getItem("Token");
+      await axios.patch(`${UPDATE_DRIVER}${currentId}`, editDriver, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      toast.success("Updated Successfully!");
+      setIsRefresh(false);
+      setEditModalOpen(false);
+      setTimeout(() => {
+        setIsRefresh(true);
+      }, 500);
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setIsDisabled(false);
+    }
+
+    resetDriver();
+
+    setEditModalOpen(false);
   };
 
   const handleDelete = async () => {
@@ -534,20 +574,20 @@ const ManageAllDriver = () => {
                 accept="image/*"
                 type="file"
                 style={{ display: "none" }}
-                onChange={(e) => handleUploadImage(e, "front")}
+                onChange={(e) => handleUploadImage(e, "DrivePic")}
               />
               <Button
                 color="secondary"
                 variant="outlined"
                 onClick={() => frontFileInputs.current.click()}
               >
-                Upload Front Image
+                Upload Driver Image
               </Button>
               {editDriver.driverPicture && (
                 <Box mt={2}>
                   <img
                     src={editDriver.driverPicture}
-                    alt="Front"
+                    alt="DrivePic"
                     style={{
                       width: "100px",
                       height: "100px",
@@ -564,7 +604,7 @@ const ManageAllDriver = () => {
                 accept="image/*"
                 type="file"
                 style={{ display: "none" }}
-                onChange={(e) => handleUploadImage(e, "back")}
+                onChange={(e) => handleUploadImage(e, "AadharPic")}
               />
               <Button
                 color="secondary"
@@ -577,7 +617,7 @@ const ManageAllDriver = () => {
                 <Box mt={2}>
                   <img
                     src={editDriver.driverAadharImage}
-                    alt="Back"
+                    alt="AadharPic"
                     style={{
                       width: "100px",
                       height: "100px",
@@ -590,11 +630,11 @@ const ManageAllDriver = () => {
             </Box>
             <Box>
               <input
-                ref={backFileInputs}
+                ref={centerFileInputs}
                 accept="image/*"
                 type="file"
                 style={{ display: "none" }}
-                onChange={(e) => handleUploadImage(e, "back")}
+                onChange={(e) => handleUploadImage(e, "LicensePic")}
               />
               <Button
                 color="secondary"
@@ -607,7 +647,7 @@ const ManageAllDriver = () => {
                 <Box mt={2}>
                   <img
                     src={editDriver.driverLicenseImage}
-                    alt="Back"
+                    alt="LicensePic"
                     style={{
                       width: "100px",
                       height: "100px",
@@ -677,8 +717,8 @@ const ManageAllDriver = () => {
               <FormControl fullWidth>
                 <InputLabel>Gender</InputLabel>
                 <Select
-                  name="driverGender.value"
-                  value={editDriver.driverGender.value}
+                  name="driverGender"
+                  value={editDriver.driverGender}
                   onChange={handleInputChange}
                   variant="filled"
                 >
@@ -691,8 +731,8 @@ const ManageAllDriver = () => {
               <FormControl fullWidth>
                 <InputLabel>Nationality</InputLabel>
                 <Select
-                  name="driverNationality.value"
-                  value={editDriver.driverNationality.value}
+                  name="driverNationality"
+                  value={editDriver.driverNationality}
                   onChange={handleInputChange}
                   variant="filled"
                 >
@@ -703,8 +743,8 @@ const ManageAllDriver = () => {
               <FormControl fullWidth>
                 <InputLabel>Language</InputLabel>
                 <Select
-                  name="driverApplicationLanguage.value"
-                  value={editDriver.driverApplicationLanguage.value}
+                  name="driverApplicationLanguage"
+                  value={editDriver.driverApplicationLanguage}
                   onChange={handleInputChange}
                   variant="filled"
                 >
@@ -717,8 +757,8 @@ const ManageAllDriver = () => {
               <FormControl fullWidth>
                 <InputLabel>ApplicationSetup</InputLabel>
                 <Select
-                  name="driverApplicationSetup.value"
-                  value={editDriver.driverApplicationSetup.value}
+                  name="driverApplicationSetup"
+                  value={editDriver.driverApplicationSetup}
                   onChange={handleInputChange}
                   variant="filled"
                 >
@@ -729,8 +769,8 @@ const ManageAllDriver = () => {
               <FormControl fullWidth>
                 <InputLabel>LicenseLocation</InputLabel>
                 <Select
-                  name="driverLicenseLocation.value"
-                  value={editDriver.driverLicenseLocation.value}
+                  name="driverLicenseLocation"
+                  value={editDriver.driverLicenseLocation}
                   onChange={handleInputChange}
                   variant="filled"
                 >
@@ -740,8 +780,8 @@ const ManageAllDriver = () => {
               <FormControl fullWidth>
                 <InputLabel>LicenseLocationDistrict</InputLabel>
                 <Select
-                  name="driverLicenseLocationDistrict.value"
-                  value={editDriver.driverLicenseLocationDistrict.value}
+                  name="driverLicenseLocationDistrict"
+                  value={editDriver.driverLicenseLocationDistrict}
                   onChange={handleInputChange}
                   variant="filled"
                 >
@@ -796,7 +836,7 @@ const ManageAllDriver = () => {
             Cancel
           </Button>
           <Button
-            // onClick={handleEdit}
+            onClick={handleEdit}
             disabled={isdisabled}
             color="secondary"
             variant="outlined"
